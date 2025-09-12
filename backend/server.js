@@ -21,7 +21,21 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 
 // Middleware
 app.use(compression()); // Gzip/Brotli compression
-app.use(helmet()); // Security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
+      imgSrc: ["'self'", "data:"],
+      connectSrc: ["'self'"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+})); // Security headers
 app.use(morgan('tiny')); // HTTP request logging
 
 // Ensure uploads directory exists

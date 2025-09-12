@@ -1,6 +1,6 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
-const bcrypt = require('bcryptjs');
+const bcryptjs = require('bcryptjs');
 const fs = require('fs');
 
 const dbPath = path.join(__dirname, 'revengers.db');
@@ -61,7 +61,7 @@ db.serialize(() => {
       db.get("SELECT COUNT(*) as count FROM admins", (err, row) => {
         if (err) return console.error(err.message);
         if (row.count === 0) {
-          bcrypt.hash('adminpassword', 10, (err, hash) => {
+          bcryptjs.hash('adminpassword', 10, (err, hash) => {
             if (err) console.error('Error hashing admin password:', err.message);
             else {
               db.run('INSERT INTO admins (username, password) VALUES (?, ?)', ['admin', hash], (err) => {
