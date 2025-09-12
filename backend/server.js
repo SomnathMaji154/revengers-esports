@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
 const cors = require('cors');
+const fs = require('fs'); // Re-add fs module
 
 // Import modularized components
 const db = require('./db'); // Database connection and initialization
