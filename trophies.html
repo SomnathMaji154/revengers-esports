@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trophies - Revengers Esports</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <svg width="200" height="100" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                <rect width="200" height="100" fill="#1a1a1a"/>
+                <text x="100" y="60" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#ff6b6b" text-anchor="middle">Revengers</text>
+                <text x="100" y="85" font-family="Arial, sans-serif" font-size="18" fill="#ffffff" text-anchor="middle">Esports</text>
+                <circle cx="30" cy="30" r="15" fill="#ff6b6b"/>
+                <circle cx="170" cy="30" r="15" fill="#ff6b6b"/>
+                <line x1="30" y1="30" x2="170" y2="30" stroke="#ff6b6b" stroke-width="3"/>
+            </svg>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="players.html">Players</a></li>
+                <li><a href="managers.html">Managers</a></li>
+                <li><a href="trophies.html">Trophies</a></li>
+                <li><a href="contact.html">Contact Us</a></li>
+                <li><a href="admin.html">Admin</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h1>Our Trophies</h1>
+            <p>Our achievements in football esports tournaments and leagues.</p>
+            <div class="content-grid" id="trophies-grid">
+                <!-- Trophy cards will be dynamically inserted here -->
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const trophiesGrid = document.getElementById('trophies-grid');
+
+            // Function to load and display trophies
+            async function loadTrophies() {
+                try {
+                    const response = await fetch('/api/trophies');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const trophies = await response.json();
+                    trophiesGrid.innerHTML = ''; // Clear existing trophies
+
+                    if (trophies.length === 0) {
+                        trophiesGrid.innerHTML = '<p>No trophies found.</p>';
+                        return;
+                    }
+
+                    trophies.forEach(trophy => {
+                        const achievementDiv = document.createElement('div');
+                        achievementDiv.className = 'achievement';
+                        achievementDiv.innerHTML = `
+                            <img src="${trophy.imageUrl ? trophy.imageUrl : 'https://via.placeholder.com/400x300?text=No+Image'}" alt="${trophy.name}" style="width:100%;height:auto;border-radius:8px;">
+                            <h3>${trophy.name}</h3>
+                            <p>Year: ${trophy.year}</p>
+                        `;
+                        trophiesGrid.appendChild(achievementDiv);
+                    });
+                } catch (error) {
+                    console.error('Error fetching trophies:', error);
+                    trophiesGrid.innerHTML = '<p>Error loading trophies. Please try again later.</p>';
+                }
+            }
+
+            // Initial load
+            loadTrophies();
+        });
+    </script>
+</body>
+</html>

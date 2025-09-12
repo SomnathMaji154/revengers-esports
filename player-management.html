@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Management - Revengers Esports</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <svg width="200" height="100" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                <rect width="200" height="100" fill="#1a1a1a"/>
+                <text x="100" y="60" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#ff6b6b" text-anchor="middle">Revengers</text>
+                <text x="100" y="85" font-family="Arial, sans-serif" font-size="18" fill="#ffffff" text-anchor="middle">Esports</text>
+                <circle cx="30" cy="30" r="15" fill="#ff6b6b"/>
+                <circle cx="170" cy="30" r="15" fill="#ff6b6b"/>
+                <line x1="30" y1="30" x2="170" y2="30" stroke="#ff6b6b" stroke-width="3"/>
+            </svg>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="players.html">Players</a></li>
+                <li><a href="managers.html">Managers</a></li>
+                <li><a href="trophies.html">Trophies</a></li>
+                <li><a href="contact.html">Contact Us</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h1>Player Management</h1>
+            <p>Manage all registered players in the system.</p>
+            
+            <div class="management-controls">
+                <div class="search-container">
+                    <input type="text" id="search-input" placeholder="Search players by name...">
+                </div>
+                
+                <div class="filter-container">
+                    <label for="position-filter">Filter by Position:</label>
+                    <select id="position-filter">
+                        <option value="">All Positions</option>
+                        <option value="ST">ST (Striker)</option>
+                        <option value="LW">LW (Left Winger)</option>
+                        <option value="RW">RW (Right Winger)</option>
+                        <option value="CM">CM (Central Midfielder)</option>
+                        <option value="CAM">CAM (Attacking Midfielder)</option>
+                        <option value="CB">CB (Center Back)</option>
+                        <option value="LB">LB (Left Back)</option>
+                        <option value="RB">RB (Right Back)</option>
+                        <option value="GK">GK (Goalkeeper)</option>
+                        <option value="CF">CF (Center Forward)</option>
+                    </select>
+                </div>
+                
+                <div class="sort-container">
+                    <label for="sort-by">Sort by:</label>
+                    <select id="sort-by">
+                        <option value="ovr-desc">OVR (High to Low)</option>
+                        <option value="ovr-asc">OVR (Low to High)</option>
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                        <option value="position-asc">Position (A-Z)</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="players-container" class="players-grid">
+                <!-- Player cards will be dynamically inserted here -->
+            </div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // DOM elements
+            const playersContainer = document.getElementById('players-container');
+            const searchInput = document.getElementById('search-input');
+            const positionFilter = document.getElementById('position-filter');
+            const sortBy = document.getElementById('sort-by');
+            
+            let allPlayers = []; // Store all players fetched from the API
+
+            // Load players from the API
+            async function loadPlayers() {
+                try {
+                    const response = await fetch('/api/players');
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    allPlayers = await response.json();
+                    filterAndSortPlayers(); // Display players after fetching
+                } catch (error) {
+                    console.error('Error fetching players:', error);
+                    playersContainer.innerHTML = '<p>Error loading players.</p>';
+                }
+            }
+            
+            // Display players in the container
+            function displayPlayers(playersToDisplay) {
+                playersContainer.innerHTML = '';
+                
+                if (playersToDisplay.length === 0) {
+                    playersContainer.innerHTML = '<p>No players found.</p>';
+                    return;
+                }
+                
+                playersToDisplay.forEach(player => {
+                    const playerCard = createPlayerCard(player);
+                    playersContainer.appendChild(playerCard);
+                });
+            }
+            
+            // Create a player card element
+            function createPlayerCard(player) {
+                const card = document.createElement('div');
+                card.className = 'player-card';
+                card.innerHTML = `
+                    <div class="card-frame"></div>
+                    <img src="${player.imageUrl ? player.imageUrl : 'https://via.placeholder.com/300x400?text=No+Image'}" alt="${player.name}">
+                    <div class="ovr">${player.ovr}</div>
+                    <div class="number">${player.jerseyNumber}</div>
+                    <div class="club-badge">RE</div>
+                    <h3 class="name">${player.name}</h3>
+                    <p class="position">${player.position}</p>
+                    <div class="chemistry-links">
+                        ${Array.from({length: player.chemistryLinks || 0}, () => '<div class="link green"></div>').join('')}
+                    </div>
+                    <div class="stars">
+                        ${Array.from({length: 5}, (_, i) => `<div class="star ${i < player.stars ? 'gold' : ''}"></div>`).join('')}
+                    </div>
+                `;
+                
+                return card;
+            }
+            
+            // Filter and sort players
+            function filterAndSortPlayers() {
+                let players = [...allPlayers]; // Start with all fetched players
+                
+                // Apply search filter
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm) {
+                    players = players.filter(player => 
+                        player.name.toLowerCase().includes(searchTerm)
+                    );
+                }
+                
+                // Apply position filter
+                const position = positionFilter.value;
+                if (position) {
+                    players = players.filter(player => player.position === position);
+                }
+                
+                // Apply sorting
+                const sortValue = sortBy.value;
+                switch (sortValue) {
+                    case 'ovr-desc':
+                        players.sort((a, b) => b.ovr - a.ovr);
+                        break;
+                    case 'ovr-asc':
+                        players.sort((a, b) => a.ovr - b.ovr);
+                        break;
+                    case 'name-asc':
+                        players.sort((a, b) => a.name.localeCompare(b.name));
+                        break;
+                    case 'name-desc':
+                        players.sort((a, b) => b.name.localeCompare(a.name));
+                        break;
+                    case 'position-asc':
+                        players.sort((a, b) => a.position.localeCompare(b.position));
+                        break;
+                }
+                
+                displayPlayers(players);
+            }
+            
+            // Event listeners for filter controls
+            searchInput.addEventListener('input', filterAndSortPlayers);
+            positionFilter.addEventListener('change', filterAndSortPlayers);
+            sortBy.addEventListener('change', filterAndSortPlayers);
+            
+            // Initial load
+            loadPlayers();
+        });
+    </script>
+</body>
+</html>

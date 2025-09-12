@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test localStorage</title>
+</head>
+<body>
+    <h1>localStorage Content</h1>
+    <pre id="output"></pre>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const output = document.getElementById('output');
+            const players = JSON.parse(localStorage.getItem('players')) || [];
+            output.textContent = JSON.stringify(players, null, 2);
+        });
+    </script>
+</body>
+</html>

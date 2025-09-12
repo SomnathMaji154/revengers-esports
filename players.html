@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Players - Revengers Esports</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <svg width="200" height="100" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+                <rect width="200" height="100" fill="#1a1a1a"/>
+                <text x="100" y="60" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#ff6b6b" text-anchor="middle">Revengers</text>
+                <text x="100" y="85" font-family="Arial, sans-serif" font-size="18" fill="#ffffff" text-anchor="middle">Esports</text>
+                <circle cx="30" cy="30" r="15" fill="#ff6b6b"/>
+                <circle cx="170" cy="30" r="15" fill="#ff6b6b"/>
+                <line x1="30" y1="30" x2="170" y2="30" stroke="#ff6b6b" stroke-width="3"/>
+            </svg>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="players.html">Players</a></li>
+                <li><a href="managers.html">Managers</a></li>
+                <li><a href="trophies.html">Trophies</a></li>
+                <li><a href="contact.html">Contact Us</a></li>
+                <li><a href="admin.html">Admin</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section>
+            <h1>Our Players</h1>
+            <p>Meet our talented football esports players dominating virtual pitches.</p>
+            <div class="players-grid" id="players-grid">
+                <!-- Players will be loaded dynamically -->
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Load players from backend API and display them
+        document.addEventListener('DOMContentLoaded', async function() {
+            const playersGrid = document.getElementById('players-grid');
+            playersGrid.innerHTML = '<p>Loading players...</p>'; // Loading indicator
+
+            try {
+                const response = await fetch('/api/players');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const players = await response.json();
+
+                if (players.length === 0) {
+                    playersGrid.innerHTML = '<p>No players found.</p>';
+                    return;
+                }
+
+                playersGrid.innerHTML = ''; // Clear loading
+
+                // Create player cards for each player
+                players.forEach(player => {
+                    const playerCard = document.createElement('div');
+                    playerCard.className = 'player-card';
+                    
+                    // Generate stars HTML
+                    let starsHTML = '';
+                    for (let i = 0; i < player.stars; i++) {
+                        starsHTML += '<span class="star gold"></span>';
+                    }
+                    
+                    // Generate chemistry links HTML
+                    let chemistryHTML = '';
+                    for (let i = 0; i < player.chemistryLinks; i++) {
+                        chemistryHTML += '<div class="link"></div>';
+                    }
+                    
+                    playerCard.innerHTML = `
+                        <img src="${player.imageUrl || 'https://via.placeholder.com/300x400?text=No+Image'}" alt="${player.name}">
+                        <div class="card-frame"></div>
+                        <div class="ovr">${player.ovr}</div>
+                        <div class="number">${player.jerseyNumber}</div>
+                        <div class="club-badge">RE</div>
+                        <div class="name">${player.name}</div>
+                        <div class="position">${player.position}</div>
+                        <div class="chemistry-links">
+                            ${chemistryHTML}
+                        </div>
+                        <div class="stars">
+                            ${starsHTML}
+                        </div>
+                    `;
+                    
+                    playersGrid.appendChild(playerCard);
+                });
+            } catch (error) {
+                console.error('Error loading players:', error);
+                playersGrid.innerHTML = '<p>Error loading players. Please try again later.</p>';
+            }
+        });
+    </script>
+
+    <footer>
+        <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
+    </footer>
