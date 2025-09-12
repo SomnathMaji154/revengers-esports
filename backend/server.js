@@ -3,11 +3,11 @@ const sqlite3 = require('sqlite3').verbose();
 const cors = require('cors');
 const path = require('path');
 const session = require('express-session');
-const bcrypt = require('bcrypt');
 const multer = require('multer'); // For handling file uploads
 const sharp = require('sharp'); // For image processing
 const fs = require('fs');
 const path = require('path');
+const bcrypt = require('bcryptjs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
