@@ -74,8 +74,19 @@
                             <label for="playerImage">Player Image:</label>
                             <input type="file" id="playerImage" name="image" accept="image/*">
                         </div>
-                        <div class="image-preview-container">
-                            <img id="imagePreview" src="" alt="Image Preview" style="max-width: 100%; display: none;">
+                        <!-- Hidden image preview - will be shown in modal -->
+                        <div id="playerImageModal" class="image-modal" style="display: none;">
+                            <div class="modal-content">
+                                <span class="close">&times;</span>
+                                <img id="playerImageModalImg" src="" alt="Image to crop">
+                                <div class="cropper-container">
+                                    <img id="playerCropperImg" src="" alt="Cropper">
+                                </div>
+                                <div class="modal-buttons">
+                                    <button id="cropConfirm">Crop & Add</button>
+                                    <button id="cropCancel">Cancel</button>
+                                </div>
+                            </div>
                         </div>
                         <button type="submit">Add Player</button>
                     </form>
@@ -102,8 +113,19 @@
                             <label for="managerImage">Manager Image:</label>
                             <input type="file" id="managerImage" name="image" accept="image/*">
                         </div>
-                        <div class="image-preview-container">
-                            <img id="managerImagePreview" src="" alt="Image Preview" style="max-width: 100%; display: none;">
+                        <!-- Hidden image preview - will be shown in modal -->
+                        <div id="managerImageModal" class="image-modal" style="display: none;">
+                            <div class="modal-content">
+                                <span class="close">&times;</span>
+                                <img id="managerImageModalImg" src="" alt="Image to crop">
+                                <div class="cropper-container">
+                                    <img id="managerCropperImg" src="" alt="Cropper">
+                                </div>
+                                <div class="modal-buttons">
+                                    <button id="managerCropConfirm">Crop & Add</button>
+                                    <button id="managerCropCancel">Cancel</button>
+                                </div>
+                            </div>
                         </div>
                         <button type="submit">Add Manager</button>
                     </form>
@@ -130,8 +152,19 @@
                             <label for="trophyImage">Trophy Image:</label>
                             <input type="file" id="trophyImage" name="image" accept="image/*">
                         </div>
-                        <div class="image-preview-container">
-                            <img id="trophyImagePreview" src="" alt="Image Preview" style="max-width: 100%; display: none;">
+                        <!-- Hidden image preview - will be shown in modal -->
+                        <div id="trophyImageModal" class="image-modal" style="display: none;">
+                            <div class="modal-content">
+                                <span class="close">&times;</span>
+                                <img id="trophyImageModalImg" src="" alt="Image to crop">
+                                <div class="cropper-container">
+                                    <img id="trophyCropperImg" src="" alt="Cropper">
+                                </div>
+                                <div class="modal-buttons">
+                                    <button id="trophyCropConfirm">Crop & Add</button>
+                                    <button id="trophyCropCancel">Cancel</button>
+                                </div>
+                            </div>
                         </div>
                         <button type="submit">Add Trophy</button>
                     </form>
@@ -264,47 +297,92 @@
                 const addManagerForm = document.getElementById('add-manager-form');
                 const addTrophyForm = document.getElementById('add-trophy-form');
 
-                // Image inputs and previews
+                // Image inputs and modals
                 const playerImageInput = document.getElementById('playerImage');
-                const imagePreview = document.getElementById('imagePreview');
+                const playerModal = document.getElementById('playerImageModal');
+                const playerModalImg = document.getElementById('playerImageModalImg');
+                const playerCropperImg = document.getElementById('playerCropperImg');
+                const cropConfirm = document.getElementById('cropConfirm');
+                const cropCancel = document.getElementById('cropCancel');
+
                 const managerImageInput = document.getElementById('managerImage');
-                const managerImagePreview = document.getElementById('managerImagePreview');
+                const managerModal = document.getElementById('managerImageModal');
+                const managerModalImg = document.getElementById('managerImageModalImg');
+                const managerCropperImg = document.getElementById('managerCropperImg');
+                const managerCropConfirm = document.getElementById('managerCropConfirm');
+                const managerCropCancel = document.getElementById('managerCropCancel');
+
                 const trophyImageInput = document.getElementById('trophyImage');
-                const trophyImagePreview = document.getElementById('trophyImagePreview');
+                const trophyModal = document.getElementById('trophyImageModal');
+                const trophyModalImg = document.getElementById('trophyImageModalImg');
+                const trophyCropperImg = document.getElementById('trophyCropperImg');
+                const trophyCropConfirm = document.getElementById('trophyCropConfirm');
+                const trophyCropCancel = document.getElementById('trophyCropCancel');
 
                 // Load initial data
                 loadAndDisplayData(API_ENDPOINTS.players, playersContainer, createPlayerCard);
                 loadAndDisplayData(API_ENDPOINTS.managers, managersContainer, createManagerCard);
                 loadAndDisplayData(API_ENDPOINTS.trophies, trophiesContainer, createTrophyCard);
 
-                // Handle image selection and Cropper.js initialization for players
+                // Handle image selection for players - show modal
                 playerImageInput.addEventListener('change', function(event) {
                     const files = event.target.files;
                     if (files && files.length > 0) {
                         const file = files[0];
                         const reader = new FileReader();
                         reader.onload = function(e) {
-                            imagePreview.src = e.target.result;
-                            imagePreview.style.display = 'block';
-
+                            playerModalImg.src = e.target.result;
+                            playerCropperImg.src = e.target.result;
+                            playerModal.style.display = 'flex';
+                            
+                            // Initialize cropper in modal
                             if (playerCropper) {
                                 playerCropper.destroy();
                             }
-                            playerCropper = new Cropper(imagePreview, {
-                                aspectRatio: 3 / 4, // For player cards (width:height)
+                            playerCropper = new Cropper(playerCropperImg, {
+                                aspectRatio: 3 / 4,
                                 viewMode: 1,
                                 autoCropArea: 0.8,
                                 background: false,
                             });
+
+                            // Modal close functionality
+                            const closeBtn = playerModal.querySelector('.close');
+                            closeBtn.onclick = function() {
+                                playerModal.style.display = 'none';
+                                playerImageInput.value = '';
+                                if (playerCropper) {
+                                    playerCropper.destroy();
+                                    playerCropper = null;
+                                }
+                            };
+
+                            cropCancel.onclick = function() {
+                                playerModal.style.display = 'none';
+                                playerImageInput.value = '';
+                                if (playerCropper) {
+                                    playerCropper.destroy();
+                                    playerCropper = null;
+                                }
+                            };
+
+                            // Confirm crop and add
+                            cropConfirm.onclick = function() {
+                                const canvas = playerCropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 400
+                                });
+                                canvas.toBlob(function(blob) {
+                                    const croppedFile = new File([blob], 'cropped-image.webp', { type: 'image/webp' });
+                                    const dataTransfer = new DataTransfer();
+                                    dataTransfer.items.add(croppedFile);
+                                    playerImageInput.files = dataTransfer.files;
+                                    
+                                    playerModal.style.display = 'none';
+                                }, 'image/webp');
+                            };
                         };
                         reader.readAsDataURL(file);
-                    } else {
-                        imagePreview.src = '';
-                        imagePreview.style.display = 'none';
-                        if (playerCropper) {
-                            playerCropper.destroy();
-                            playerCropper = null;
-                        }
                     }
                 });
 
@@ -317,60 +395,80 @@
                     formData.append('jerseyNumber', document.getElementById('playerJerseyNumber').value);
                     formData.append('stars', document.getElementById('playerStars').value);
 
-                    if (playerCropper) {
-                        playerCropper.getCroppedCanvas({
-                            width: 300, // Target width for player images
-                            height: 400, // Target height for player images
-                        }).toBlob(async (blob) => {
-                            formData.append('image', blob, 'player-image.webp');
-                            await handleAddWithImage(formData, API_ENDPOINTS.players, () => {
-                                addPlayerForm.reset();
-                                imagePreview.src = '';
-                                imagePreview.style.display = 'none';
-                                if (playerCropper) {
-                                    playerCropper.destroy();
-                                    playerCropper = null;
-                                }
-                                loadAndDisplayData(API_ENDPOINTS.players, playersContainer, createPlayerCard);
-                            });
-                        }, 'image/webp');
-                    } else {
-                        // If no image is selected, submit other data without an image
-                        await handleAddWithImage(formData, API_ENDPOINTS.players, () => {
-                            addPlayerForm.reset();
-                            loadAndDisplayData(API_ENDPOINTS.players, playersContainer, createPlayerCard);
-                        });
+                    if (playerImageInput.files && playerImageInput.files.length > 0) {
+                        formData.append('image', playerImageInput.files[0]);
                     }
+
+                    await handleAddWithImage(formData, API_ENDPOINTS.players, () => {
+                        addPlayerForm.reset();
+                        playerImageInput.value = '';
+                        if (playerCropper) {
+                            playerCropper.destroy();
+                            playerCropper = null;
+                        }
+                        loadAndDisplayData(API_ENDPOINTS.players, playersContainer, createPlayerCard);
+                    });
                 });
 
-                // Handle image selection and Cropper.js initialization for managers
+                // Handle image selection for managers - show modal
                 managerImageInput.addEventListener('change', function(event) {
                     const files = event.target.files;
                     if (files && files.length > 0) {
                         const file = files[0];
                         const reader = new FileReader();
                         reader.onload = function(e) {
-                            managerImagePreview.src = e.target.result;
-                            managerImagePreview.style.display = 'block';
-
+                            managerModalImg.src = e.target.result;
+                            managerCropperImg.src = e.target.result;
+                            managerModal.style.display = 'flex';
+                            
+                            // Initialize cropper in modal
                             if (managerCropper) {
                                 managerCropper.destroy();
                             }
-                            managerCropper = new Cropper(managerImagePreview, {
-                                aspectRatio: 3 / 4, // For manager cards (width:height)
+                            managerCropper = new Cropper(managerCropperImg, {
+                                aspectRatio: 3 / 4,
                                 viewMode: 1,
                                 autoCropArea: 0.8,
                                 background: false,
                             });
+
+                            // Modal close functionality
+                            const closeBtn = managerModal.querySelector('.close');
+                            closeBtn.onclick = function() {
+                                managerModal.style.display = 'none';
+                                managerImageInput.value = '';
+                                if (managerCropper) {
+                                    managerCropper.destroy();
+                                    managerCropper = null;
+                                }
+                            };
+
+                            managerCropCancel.onclick = function() {
+                                managerModal.style.display = 'none';
+                                managerImageInput.value = '';
+                                if (managerCropper) {
+                                    managerCropper.destroy();
+                                    managerCropper = null;
+                                }
+                            };
+
+                            // Confirm crop and add
+                            managerCropConfirm.onclick = function() {
+                                const canvas = managerCropper.getCroppedCanvas({
+                                    width: 300,
+                                    height: 400
+                                });
+                                canvas.toBlob(function(blob) {
+                                    const croppedFile = new File([blob], 'cropped-manager.webp', { type: 'image/webp' });
+                                    const dataTransfer = new DataTransfer();
+                                    dataTransfer.items.add(croppedFile);
+                                    managerImageInput.files = dataTransfer.files;
+                                    
+                                    managerModal.style.display = 'none';
+                                }, 'image/webp');
+                            };
                         };
                         reader.readAsDataURL(file);
-                    } else {
-                        managerImagePreview.src = '';
-                        managerImagePreview.style.display = 'none';
-                        if (managerCropper) {
-                            managerCropper.destroy();
-                            managerCropper = null;
-                        }
                     }
                 });
 
@@ -382,62 +480,95 @@
                     formData.append('name', document.getElementById('managerName').value);
                     formData.append('role', document.getElementById('managerRole').value);
 
-                    if (managerCropper) {
-                        managerCropper.getCroppedCanvas({
-                            width: 300, // Target width for manager images
-                            height: 400, // Target height for manager images
-                        }).toBlob(async (blob) => {
-                            formData.append('image', blob, 'manager-image.webp');
-                            await handleAddWithImage(formData, API_ENDPOINTS.managers, () => {
-                                addManagerForm.reset();
-                                managerImagePreview.src = '';
-                                managerImagePreview.style.display = 'none';
-                                if (managerCropper) {
-                                    managerCropper.destroy();
-                                    managerCropper = null;
-                                }
-                                loadAndDisplayData(API_ENDPOINTS.managers, managersContainer, createManagerCard);
-                            });
-                        }, 'image/webp');
-                    } else {
-                        // If no image is selected, submit other data without an image
-                        await handleAddWithImage(formData, API_ENDPOINTS.managers, () => {
-                            addManagerForm.reset();
-                            loadAndDisplayData(API_ENDPOINTS.managers, managersContainer, createManagerCard);
-                        });
+                    if (managerImageInput.files && managerImageInput.files.length > 0) {
+                        formData.append('image', managerImageInput.files[0]);
                     }
+
+                    await handleAddWithImage(formData, API_ENDPOINTS.managers, () => {
+                        addManagerForm.reset();
+                        managerImageInput.value = '';
+                        if (managerCropper) {
+                            managerCropper.destroy();
+                            managerCropper = null;
+                        }
+                        loadAndDisplayData(API_ENDPOINTS.managers, managersContainer, createManagerCard);
+                    });
                 });
 
-                // Handle image selection and Cropper.js initialization for trophies
+                // Handle image selection for trophies - show modal
                 trophyImageInput.addEventListener('change', function(event) {
                     const files = event.target.files;
                     if (files && files.length > 0) {
                         const file = files[0];
                         const reader = new FileReader();
                         reader.onload = function(e) {
-                            trophyImagePreview.src = e.target.result;
-                            trophyImagePreview.style.display = 'block';
-
+                            trophyModalImg.src = e.target.result;
+                            trophyCropperImg.src = e.target.result;
+                            trophyModal.style.display = 'flex';
+                            
+                            // Initialize cropper in modal
                             if (trophyCropper) {
                                 trophyCropper.destroy();
                             }
-                            trophyCropper = new Cropper(trophyImagePreview, {
-                                aspectRatio: 4 / 3, // For trophy images (width:height)
+                            trophyCropper = new Cropper(trophyCropperImg, {
+                                aspectRatio: 4 / 3,
                                 viewMode: 1,
                                 autoCropArea: 0.8,
                                 background: false,
                             });
+
+                            // Modal close functionality
+                            const closeBtn = trophyModal.querySelector('.close');
+                            closeBtn.onclick = function() {
+                                trophyModal.style.display = 'none';
+                                trophyImageInput.value = '';
+                                if (trophyCropper) {
+                                    trophyCropper.destroy();
+                                    trophyCropper = null;
+                                }
+                            };
+
+                            trophyCropCancel.onclick = function() {
+                                trophyModal.style.display = 'none';
+                                trophyImageInput.value = '';
+                                if (trophyCropper) {
+                                    trophyCropper.destroy();
+                                    trophyCropper = null;
+                                }
+                            };
+
+                            // Confirm crop and add
+                            trophyCropConfirm.onclick = function() {
+                                const canvas = trophyCropper.getCroppedCanvas({
+                                    width: 400,
+                                    height: 300
+                                });
+                                canvas.toBlob(function(blob) {
+                                    const croppedFile = new File([blob], 'cropped-trophy.webp', { type: 'image/webp' });
+                                    const dataTransfer = new DataTransfer();
+                                    dataTransfer.items.add(croppedFile);
+                                    trophyImageInput.files = dataTransfer.files;
+                                    
+                                    trophyModal.style.display = 'none';
+                                }, 'image/webp');
+                            };
                         };
                         reader.readAsDataURL(file);
-                    } else {
-                        trophyImagePreview.src = '';
-                        trophyImagePreview.style.display = 'none';
-                        if (trophyCropper) {
-                            trophyCropper.destroy();
-                            trophyCropper = null;
-                        }
                     }
                 });
+
+                // Close modals when clicking outside
+                window.onclick = function(event) {
+                    if (event.target.classList.contains('image-modal')) {
+                        event.target.style.display = 'none';
+                        if (playerCropper) playerCropper.destroy();
+                        if (managerCropper) managerCropper.destroy();
+                        if (trophyCropper) trophyCropper.destroy();
+                        playerImageInput.value = '';
+                        managerImageInput.value = '';
+                        trophyImageInput.value = '';
+                    }
+                };
 
                 // Handle add trophy form submission
                 addTrophyForm.addEventListener('submit', async function(event) {
@@ -447,30 +578,19 @@
                     formData.append('name', document.getElementById('trophyName').value);
                     formData.append('year', document.getElementById('trophyYear').value);
 
-                    if (trophyCropper) {
-                        trophyCropper.getCroppedCanvas({
-                            width: 400, // Target width for trophy images
-                            height: 300, // Target height for trophy images
-                        }).toBlob(async (blob) => {
-                            formData.append('image', blob, 'trophy-image.webp');
-                            await handleAddWithImage(formData, API_ENDPOINTS.trophies, () => {
-                                addTrophyForm.reset();
-                                trophyImagePreview.src = '';
-                                trophyImagePreview.style.display = 'none';
-                                if (trophyCropper) {
-                                    trophyCropper.destroy();
-                                    trophyCropper = null;
-                                }
-                                loadAndDisplayData(API_ENDPOINTS.trophies, trophiesContainer, createTrophyCard);
-                            });
-                        }, 'image/webp');
-                    } else {
-                        // If no image is selected, submit other data without an image
-                        await handleAddWithImage(formData, API_ENDPOINTS.trophies, () => {
-                            addTrophyForm.reset();
-                            loadAndDisplayData(API_ENDPOINTS.trophies, trophiesContainer, createTrophyCard);
-                        });
+                    if (trophyImageInput.files && trophyImageInput.files.length > 0) {
+                        formData.append('image', trophyImageInput.files[0]);
                     }
+
+                    await handleAddWithImage(formData, API_ENDPOINTS.trophies, () => {
+                        addTrophyForm.reset();
+                        trophyImageInput.value = '';
+                        if (trophyCropper) {
+                            trophyCropper.destroy();
+                            trophyCropper = null;
+                        }
+                        loadAndDisplayData(API_ENDPOINTS.trophies, trophiesContainer, createTrophyCard);
+                    });
                 });
             }
 
