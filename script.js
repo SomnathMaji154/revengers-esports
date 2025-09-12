@@ -38,8 +38,22 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('Error submitting contact form:', error);
                 alert('Error submitting contact form. Please try again.');
+    }
+
+    async function checkAdminStatus() {
+        try {
+            const response = await fetch('/api/admin/status');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
             }
-        });
+            const data = await response.json();
+            return data.loggedIn;
+        } catch (error) {
+            console.error('Error checking admin status:', error);
+            return false;
+        }
+    }
+});
     }
 
     // Fetch and display registered users on the registered-users.html page
@@ -49,6 +63,12 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     async function fetchRegisteredUsers() {
+        const isLoggedIn = await checkAdminStatus();
+        if (!isLoggedIn) {
+            alert('You must be logged in to view registered users.');
+            userDataBody.innerHTML = '<tr><td colspan="3">You must be logged in to view registered users.</td></tr>';
+            return;
+        }
         try {
             const response = await fetch('/api/registered-users');
             if (!response.ok) {
