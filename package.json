@@ -4,17 +4,19 @@
   "description": "Revengers Esports website with admin backend",
   "main": "backend/server.js",
   "scripts": {
-    "start": "cd backend && node server.js",
+    "start": "node backend/server.js",
     "dev": "cd backend && npm run dev",
     "install-backend": "cd backend && npm install"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "express-session": "^1.18.0",
     "helmet": "^8.1.0",
-    "helmet-csp": "^4.0.0",
+    "morgan": "^1.10.1",
+    "multer": "^1.4.5-lts.1",
     "sharp": "^0.33.4",
     "sqlite3": "^5.1.6"
   },
