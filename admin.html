@@ -63,40 +63,12 @@
                             <input type="text" id="playerName" name="name" required>
                         </div>
                         <div class="form-group">
-                            <label for="playerEmail">Email:</label>
-                            <input type="email" id="playerEmail" name="email">
-                        </div>
-                        <div class="form-group">
-                            <label for="playerPosition">Position:</label>
-                            <select id="playerPosition" name="position" required>
-                                <option value="">Select Position</option>
-                                <option value="ST">ST (Striker)</option>
-                                <option value="LW">LW (Left Winger)</option>
-                                <option value="RW">RW (Right Winger)</option>
-                                <option value="CM">CM (Central Midfielder)</option>
-                                <option value="CAM">CAM (Attacking Midfielder)</option>
-                                <option value="CB">CB (Center Back)</option>
-                                <option value="LB">LB (Left Back)</option>
-                                <option value="RB">RB (Right Back)</option>
-                                <option value="GK">GK (Goalkeeper)</option>
-                                <option value="CF">CF (Center Forward)</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="playerOVR">OVR:</label>
-                            <input type="number" id="playerOVR" name="ovr" min="1" max="99" required>
-                        </div>
-                        <div class="form-group">
                             <label for="playerJerseyNumber">Jersey Number:</label>
-                            <input type="number" id="playerJerseyNumber" name="jerseyNumber" min="1" max="99">
+                            <input type="number" id="playerJerseyNumber" name="jerseyNumber" min="1" max="99" required>
                         </div>
                         <div class="form-group">
                             <label for="playerStars">Stars (1-5):</label>
                             <input type="number" id="playerStars" name="stars" min="1" max="5" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="playerExperience">Experience (Years):</label>
-                            <input type="number" id="playerExperience" name="experience" min="0">
                         </div>
                         <div class="form-group">
                             <label for="playerImage">Player Image:</label>
@@ -342,12 +314,8 @@
 
                     const formData = new FormData();
                     formData.append('name', document.getElementById('playerName').value);
-                    formData.append('email', document.getElementById('playerEmail').value);
-                    formData.append('position', document.getElementById('playerPosition').value);
-                    formData.append('ovr', document.getElementById('playerOVR').value);
                     formData.append('jerseyNumber', document.getElementById('playerJerseyNumber').value);
                     formData.append('stars', document.getElementById('playerStars').value);
-                    formData.append('experience', document.getElementById('playerExperience').value);
 
                     if (playerCropper) {
                         playerCropper.getCroppedCanvas({
@@ -605,11 +573,7 @@
                 // It remains for consistency if other parts of the code still expect it.
                 return {
                     name: document.getElementById('playerName').value,
-                    email: document.getElementById('playerEmail').value,
-                    experience: parseInt(document.getElementById('playerExperience').value),
-                    position: document.getElementById('playerPosition').value,
                     jerseyNumber: parseInt(document.getElementById('playerJerseyNumber').value),
-                    ovr: parseInt(document.getElementById('playerOVR').value),
                     stars: parseInt(document.getElementById('playerStars').value),
                     // imageUrl is handled by file upload
                     status: 'approved' // Default status
@@ -641,7 +605,7 @@
                 const card = document.createElement('div');
                 card.className = 'db-card';
                 card.innerHTML = `
-                    <p>${player.name} (${player.position})</p>
+                    <p>${player.name} - #${player.jerseyNumber} (${player.stars} stars)</p>
                     <button class="delete-btn" data-id="${player.id}">Delete</button>
                 `;
                 card.querySelector('.delete-btn').addEventListener('click', () => handleDelete('/api/players', player.id, () => loadAndDisplayData('/api/players', document.getElementById('players-container'), createPlayerCard)));
