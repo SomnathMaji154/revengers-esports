@@ -40,31 +40,13 @@
                     <input type="text" id="search-input" placeholder="Search players by name...">
                 </div>
                 
-                <div class="filter-container">
-                    <label for="position-filter">Filter by Position:</label>
-                    <select id="position-filter">
-                        <option value="">All Positions</option>
-                        <option value="ST">ST (Striker)</option>
-                        <option value="LW">LW (Left Winger)</option>
-                        <option value="RW">RW (Right Winger)</option>
-                        <option value="CM">CM (Central Midfielder)</option>
-                        <option value="CAM">CAM (Attacking Midfielder)</option>
-                        <option value="CB">CB (Center Back)</option>
-                        <option value="LB">LB (Left Back)</option>
-                        <option value="RB">RB (Right Back)</option>
-                        <option value="GK">GK (Goalkeeper)</option>
-                        <option value="CF">CF (Center Forward)</option>
-                    </select>
-                </div>
-                
                 <div class="sort-container">
                     <label for="sort-by">Sort by:</label>
                     <select id="sort-by">
-                        <option value="ovr-desc">OVR (High to Low)</option>
-                        <option value="ovr-asc">OVR (Low to High)</option>
                         <option value="name-asc">Name (A-Z)</option>
                         <option value="name-desc">Name (Z-A)</option>
-                        <option value="position-asc">Position (A-Z)</option>
+                        <option value="stars-desc">Stars (High to Low)</option>
+                        <option value="stars-asc">Stars (Low to High)</option>
                     </select>
                 </div>
             </div>
@@ -85,7 +67,6 @@
             // DOM elements
             const playersContainer = document.getElementById('players-container');
             const searchInput = document.getElementById('search-input');
-            const positionFilter = document.getElementById('position-filter');
             const sortBy = document.getElementById('sort-by');
             
             let allPlayers = []; // Store all players fetched from the API
@@ -127,14 +108,9 @@
                 card.innerHTML = `
                     <div class="card-frame"></div>
                     <img src="${player.imageUrl ? player.imageUrl : 'https://via.placeholder.com/300x400?text=No+Image'}" alt="${player.name}">
-                    <div class="ovr">${player.ovr}</div>
                     <div class="number">${player.jerseyNumber}</div>
                     <div class="club-badge">RE</div>
                     <h3 class="name">${player.name}</h3>
-                    <p class="position">${player.position}</p>
-                    <div class="chemistry-links">
-                        ${Array.from({length: player.chemistryLinks || 0}, () => '<div class="link green"></div>').join('')}
-                    </div>
                     <div class="stars">
                         ${Array.from({length: 5}, (_, i) => `<div class="star ${i < player.stars ? 'gold' : ''}"></div>`).join('')}
                     </div>
@@ -155,29 +131,20 @@
                     );
                 }
                 
-                // Apply position filter
-                const position = positionFilter.value;
-                if (position) {
-                    players = players.filter(player => player.position === position);
-                }
-                
                 // Apply sorting
                 const sortValue = sortBy.value;
                 switch (sortValue) {
-                    case 'ovr-desc':
-                        players.sort((a, b) => b.ovr - a.ovr);
-                        break;
-                    case 'ovr-asc':
-                        players.sort((a, b) => a.ovr - b.ovr);
-                        break;
                     case 'name-asc':
                         players.sort((a, b) => a.name.localeCompare(b.name));
                         break;
                     case 'name-desc':
                         players.sort((a, b) => b.name.localeCompare(a.name));
                         break;
-                    case 'position-asc':
-                        players.sort((a, b) => a.position.localeCompare(b.position));
+                    case 'stars-desc':
+                        players.sort((a, b) => b.stars - a.stars);
+                        break;
+                    case 'stars-asc':
+                        players.sort((a, b) => a.stars - b.stars);
                         break;
                 }
                 
@@ -186,7 +153,6 @@
             
             // Event listeners for filter controls
             searchInput.addEventListener('input', filterAndSortPlayers);
-            positionFilter.addEventListener('change', filterAndSortPlayers);
             sortBy.addEventListener('change', filterAndSortPlayers);
             
             // Initial load
