@@ -104,19 +104,22 @@ header {
     perspective: 1000px;
 }
 
-.logo svg {
+.header-logo {
+    height: 50px; /* Adjust as needed */
+    width: auto;
+    max-width: 100%;
+    display: block;
     filter: drop-shadow(0 8px 16px rgba(239, 68, 68, 0.4));
     transition: var(--transition);
     cursor: pointer;
-    transform-style: preserve-3d;
 }
 
-.logo svg:hover {
+.header-logo:hover {
     transform: scale(1.05) rotateY(10deg) rotateX(5deg);
     filter: drop-shadow(0 12px 24px rgba(239, 68, 68, 0.6));
 }
 
-.logo svg:active {
+.header-logo:active {
     transform: scale(0.98) rotateY(0deg) rotateX(0deg);
 }
 
@@ -1294,24 +1297,6 @@ tbody tr:last-child td {
     margin-bottom: 1rem;
 }
 
-.image-preview-container {
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-    border: 1px dashed var(--border-color);
-    padding: 1rem;
-    border-radius: var(--border-radius);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 150px;
-    overflow: hidden;
-}
-
-.image-preview-container img {
-    display: block;
-    max-width: 100%;
-    height: auto;
-}
 
 /* Cropper.js specific overrides */
 .cropper-view-box,
