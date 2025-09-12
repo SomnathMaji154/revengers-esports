@@ -6,7 +6,6 @@ const session = require('express-session');
 const multer = require('multer'); // For handling file uploads
 const sharp = require('sharp'); // For image processing
 const fs = require('fs');
-const path = require('path');
 const bcrypt = require('bcryptjs');
 
 const app = express();
@@ -25,15 +24,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../'))); // Serve frontend files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Serve uploaded images
 
-// Multer storage configuration
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
+// Ensure uploads directory exists (still needed for serving processed images)
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage: storage,
@@ -66,14 +62,9 @@ db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS players (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
-    email TEXT UNIQUE,
-    position TEXT,
-    ovr INTEGER,
     jerseyNumber INTEGER,
     imageUrl TEXT,
     stars INTEGER,
-    chemistryLinks INTEGER,
-    experience INTEGER,
     joined_date DATETIME DEFAULT (DATETIME('now'))
   )`, (err) => {
     if (err) console.error('Error creating players table:', err.message);
@@ -145,15 +136,15 @@ db.serialize(() => {
     }
     if (row.count === 0) {
       const samplePlayers = [
-        { name: 'Kai Jensen', email: 'kai@revengers.com', position: 'ST', ovr: 89, jerseyNumber: 7, imageUrl: 'https://images.unsplash.com/photo-1571019613454-9e9192ea696e?w=300&h=400&fit=crop', stars: 5, chemistryLinks: 2, experience: 5 },
-        { name: 'Lena Vogt', email: 'lena@revengers.com', position: 'LW', ovr: 84, jerseyNumber: 11, imageUrl: 'https://images.unsplash.com/photo-1607744986526-7f44e5377b2f?w=300&h=400&fit=crop', stars: 4, chemistryLinks: 2, experience: 3 },
-        { name: 'Theo Grant', email: 'theo@revengers.com', position: 'CM', ovr: 91, jerseyNumber: 6, imageUrl: 'https://images.unsplash.com/photo-1611003229180-b1087d8ce7b5?w=300&h=400&fit=crop', stars: 5, chemistryLinks: 2, experience: 7 },
-        { name: 'Nora Kim', email: 'nora@revengers.com', position: 'CB', ovr: 78, jerseyNumber: 4, imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=400&fit=crop', stars: 3, chemistryLinks: 2, experience: 2 },
-        { name: 'Raul Ortiz', email: 'raul@revengers.com', position: 'GK', ovr: 82, jerseyNumber: 1, imageUrl: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c6b?w=300&h=400&fit=crop', stars: 4, chemistryLinks: 2, experience: 4 }
+        { name: 'Kai Jensen', jerseyNumber: 7, imageUrl: 'https://images.unsplash.com/photo-1571019613454-9e9192ea696e?w=300&h=400&fit=crop', stars: 5 },
+        { name: 'Lena Vogt', jerseyNumber: 11, imageUrl: 'https://images.unsplash.com/photo-1607744986526-7f44e5377b2f?w=300&h=400&fit=crop', stars: 4 },
+        { name: 'Theo Grant', jerseyNumber: 6, imageUrl: 'https://images.unsplash.com/photo-1611003229180-b1087d8ce7b5?w=300&h=400&fit=crop', stars: 5 },
+        { name: 'Nora Kim', jerseyNumber: 4, imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=400&fit=crop', stars: 3 },
+        { name: 'Raul Ortiz', jerseyNumber: 1, imageUrl: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c6b?w=300&h=400&fit=crop', stars: 4 }
       ];
 
-      const stmt = db.prepare('INSERT INTO players (name, email, position, ovr, jerseyNumber, imageUrl, stars, chemistryLinks, experience) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)');
-      samplePlayers.forEach(p => stmt.run(p.name, p.email, p.position, p.ovr, p.jerseyNumber, p.imageUrl, p.stars, p.chemistryLinks, p.experience));
+      const stmt = db.prepare('INSERT INTO players (name, jerseyNumber, imageUrl, stars) VALUES (?, ?, ?, ?)');
+      samplePlayers.forEach(p => stmt.run(p.name, p.jerseyNumber, p.imageUrl, p.stars));
       stmt.finalize(err => {
         if (err) console.error('Error inserting sample players:', err.message);
         else console.log('Sample players inserted');
@@ -245,7 +236,7 @@ app.get('/api/admin/status', (req, res) => {
 
 // GET /api/players - Fetch all players
 app.get('/api/players', (req, res) => {
-  db.all("SELECT * FROM players ORDER BY joined_date DESC", [], (err, rows) => {
+  db.all("SELECT id, name, jerseyNumber, imageUrl, stars, joined_date FROM players ORDER BY joined_date DESC", [], (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return console.error(err.message);
@@ -256,7 +247,7 @@ app.get('/api/players', (req, res) => {
 
 // POST /api/players - Add new player (handles both join page and admin)
 app.post('/api/players', isAuthenticated, upload.single('image'), async (req, res) => { // Protected route
-  const { name, email, position, ovr, jerseyNumber, stars, experience } = req.body;
+  const { name, jerseyNumber, stars } = req.body;
   let imageUrl = null;
 
   if (req.file) {
@@ -277,8 +268,8 @@ app.post('/api/players', isAuthenticated, upload.single('image'), async (req, re
     }
   }
 
-  const sql = `INSERT INTO players (name, email, position, ovr, jerseyNumber, imageUrl, stars, experience, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-  const params = [name, email, position, ovr, jerseyNumber, imageUrl, stars, experience, 'active'];
+  const sql = `INSERT INTO players (name, jerseyNumber, imageUrl, stars) VALUES (?, ?, ?, ?)`;
+  const params = [name, jerseyNumber, imageUrl, stars];
   
   db.run(sql, params, function(err) {
     if (err) {
