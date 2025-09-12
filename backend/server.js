@@ -128,61 +128,8 @@ db.serialize(() => {
     }
   });
 
-  // Insert sample data if tables are empty
-  db.get("SELECT COUNT(*) as count FROM players", (err, row) => {
-    if (err) {
-      console.error(err.message);
-      return;
-    }
-    if (row.count === 0) {
-      const samplePlayers = [
-        { name: 'Kai Jensen', jerseyNumber: 7, imageUrl: 'https://images.unsplash.com/photo-1571019613454-9e9192ea696e?w=300&h=400&fit=crop', stars: 5 },
-        { name: 'Lena Vogt', jerseyNumber: 11, imageUrl: 'https://images.unsplash.com/photo-1607744986526-7f44e5377b2f?w=300&h=400&fit=crop', stars: 4 },
-        { name: 'Theo Grant', jerseyNumber: 6, imageUrl: 'https://images.unsplash.com/photo-1611003229180-b1087d8ce7b5?w=300&h=400&fit=crop', stars: 5 },
-        { name: 'Nora Kim', jerseyNumber: 4, imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=300&h=400&fit=crop', stars: 3 },
-        { name: 'Raul Ortiz', jerseyNumber: 1, imageUrl: 'https://images.unsplash.com/photo-1579952363873-27d3bfad9c6b?w=300&h=400&fit=crop', stars: 4 }
-      ];
-
-      const stmt = db.prepare('INSERT INTO players (name, jerseyNumber, imageUrl, stars) VALUES (?, ?, ?, ?)');
-      samplePlayers.forEach(p => stmt.run(p.name, p.jerseyNumber, p.imageUrl, p.stars));
-      stmt.finalize(err => {
-        if (err) console.error('Error inserting sample players:', err.message);
-        else console.log('Sample players inserted');
-      });
-    }
-  });
-
-  db.get("SELECT COUNT(*) as count FROM managers", (err, row) => {
-    if (err) return console.error(err.message);
-    if (row.count === 0) {
-      const sampleManagers = [
-        { name: 'Alex Ferguson', role: 'Head Coach', imageUrl: 'https://images.unsplash.com/photo-1571019613454-9e9192ea696e?w=300&h=400&fit=crop' },
-        { name: 'Jane Smith', role: 'Assistant Coach', imageUrl: 'https://images.unsplash.com/photo-1607744986526-7f44e5377b2f?w=300&h=400&fit=crop' }
-      ];
-      const stmt = db.prepare('INSERT INTO managers (name, role, imageUrl) VALUES (?, ?, ?)');
-      sampleManagers.forEach(m => stmt.run(m.name, m.role, m.imageUrl));
-      stmt.finalize(err => {
-        if (err) console.error('Error inserting sample managers:', err.message);
-        else console.log('Sample managers inserted');
-      });
-    }
-  });
-
-  db.get("SELECT COUNT(*) as count FROM trophies", (err, row) => {
-    if (err) return console.error(err.message);
-    if (row.count === 0) {
-      const sampleTrophies = [
-        { name: 'Esports Championship', year: 2023, imageUrl: 'https://images.unsplash.com/photo-1571019613454-9e9192ea696e?w=300&h=400&fit=crop' },
-        { name: 'Regional Cup', year: 2024, imageUrl: 'https://images.unsplash.com/photo-1607744986526-7f44e5377b2f?w=300&h=400&fit=crop' }
-      ];
-      const stmt = db.prepare('INSERT INTO trophies (name, year, imageUrl) VALUES (?, ?, ?)');
-      sampleTrophies.forEach(t => stmt.run(t.name, t.year, t.imageUrl));
-      stmt.finalize(err => {
-        if (err) console.error('Error inserting sample trophies:', err.message);
-        else console.log('Sample trophies inserted');
-      });
-    }
-  });
+  // Tables now start empty - no sample data inserted
+  console.log('Database initialized. Tables are empty and ready for admin data entry.');
 });
 
 // Authentication middleware
