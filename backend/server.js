@@ -78,6 +78,7 @@ app.use('/api/contact', contactRoutes); // Contact routes (for submission)
 app.use('/api/registered-users', contactRoutes); // Contact routes (for viewing registered users)
 
 // Centralized Error Handling Middleware
+// Added comment to trigger redeploy
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.statusCode || 500).json({
