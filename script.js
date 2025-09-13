@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle contact form submission
+    // Handle contact form submission with enhanced validation and feedback
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
         contactForm.addEventListener('submit', async function(event) {
@@ -8,17 +8,32 @@ document.addEventListener('DOMContentLoaded', function() {
             const name = document.getElementById('name').value.trim();
             const email = document.getElementById('email').value.trim();
             const whatsapp = document.getElementById('whatsapp').value.trim();
+            const submitButton = contactForm.querySelector('.form-submit');
 
+            // Validation
             if (!name || !email || !whatsapp) {
-                alert('Please fill in all fields.');
+                showAlert('Please fill in all fields.', 'error');
                 return;
             }
 
-            // Simple email validation
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-                alert('Please enter a valid email address.');
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showAlert('Please enter a valid email address.', 'error');
                 return;
             }
+
+            // WhatsApp validation (assuming 10 digits)
+            const whatsappRegex = /^\d{10,15}$/;
+            if (!whatsappRegex.test(whatsapp.replace(/\D/g, ''))) {
+                showAlert('Please enter a valid WhatsApp number (10-15 digits).', 'error');
+                return;
+            }
+
+            // Disable submit button and show loading state
+            const originalText = submitButton.textContent;
+            submitButton.textContent = 'Submitting...';
+            submitButton.disabled = true;
 
             try {
                 const response = await fetch('/api/contact', {
@@ -33,11 +48,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                alert('Thank you for contacting us, ' + name + '! Your message has been submitted.');
+                showAlert('Thank you for contacting us, ' + name + '! Your message has been submitted.', 'success');
                 contactForm.reset();
             } catch (error) {
                 console.error('Error submitting contact form:', error);
-                alert('Error submitting contact form. Please try again.');
+                showAlert('Error submitting contact form. Please try again.', 'error');
+            } finally {
+                // Re-enable submit button
+                submitButton.textContent = originalText;
+                submitButton.disabled = false;
             }
         });
     }
@@ -65,7 +84,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function fetchRegisteredUsers() {
         const isLoggedIn = await checkAdminStatus();
         if (!isLoggedIn) {
-            alert('You must be logged in to view registered users.');
+            showAlert('You must be logged in to view registered users.', 'error');
             userDataBody.innerHTML = '<tr><td colspan="3">You must be logged in to view registered users.</td></tr>';
             return;
         }
@@ -78,6 +97,7 @@ document.addEventListener('DOMContentLoaded', function() {
             displayRegisteredUsers(users);
         } catch (error) {
             console.error('Error fetching registered users:', error);
+            showAlert('Error loading registered users.', 'error');
             userDataBody.innerHTML = '<tr><td colspan="3">Error loading registered users.</td></tr>';
         }
     }
@@ -94,5 +114,40 @@ document.addEventListener('DOMContentLoaded', function() {
             row.insertCell().textContent = user.email;
             row.insertCell().textContent = user.whatsapp;
         });
+    }
+
+    // Enhanced alert function
+    function showAlert(message, type) {
+        // Remove any existing alerts
+        const existingAlert = document.querySelector('.custom-alert');
+        if (existingAlert) {
+            existingAlert.remove();
+        }
+
+        // Create alert element
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} custom-alert`;
+        alert.textContent = message;
+
+        // Add close button
+        const closeBtn = document.createElement('span');
+        closeBtn.innerHTML = '&times;';
+        closeBtn.style.float = 'right';
+        closeBtn.style.cursor = 'pointer';
+        closeBtn.style.fontSize = '1.5em';
+        closeBtn.style.lineHeight = '0.5';
+        closeBtn.onclick = () => alert.remove();
+        alert.appendChild(closeBtn);
+
+        // Add to page
+        const container = document.querySelector('.container') || document.body;
+        container.insertBefore(alert, container.firstChild);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, 5000);
     }
 });
