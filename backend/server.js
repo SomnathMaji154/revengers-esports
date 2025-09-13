@@ -1,13 +1,14 @@
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
+const connectPgSimple = require('connect-pg-simple');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const compression = require('compression');
 const cors = require('cors');
-const fs = require('fs'); // Re-add fs module
 
 // Import modularized components
+const { pool } = require('./db'); // Get pool for session store
 const db = require('./db'); // Database connection and initialization
 const { router: authRoutes, isAuthenticated } = require('./auth'); // Auth routes and middleware
 const playerRoutes = require('./playerRoutes'); // Player API routes
@@ -38,13 +39,6 @@ app.use(helmet({
 })); // Security headers
 app.use(morgan('tiny')); // HTTP request logging
 
-// Ensure uploads directory exists
-const uploadsDir = path.join(__dirname, 'uploads');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log('Created uploads directory:', uploadsDir);
-}
-
 // Configure CORS for production
 const corsOptions = {
   origin: NODE_ENV === 'production' ? 'https://revengers-esports.onrender.com' : '*',
@@ -53,21 +47,28 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Session middleware
+// Session middleware with PostgreSQL store
+const pgSession = connectPgSimple(session);
+
 app.use(session({
+  store: new pgSession({
+    pool: pool,
+    tableName: 'sessions',
+    createTableIfMissing: true
+  }),
   secret: process.env.SESSION_SECRET || 'super_secret_dev_key',
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: { 
     secure: NODE_ENV === 'production',
     httpOnly: true,
     sameSite: 'lax',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
 
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, '../')));
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes
 app.use('/api', authRoutes); // Authentication routes
@@ -78,7 +79,6 @@ app.use('/api/contact', contactRoutes); // Contact routes (for submission)
 app.use('/api/registered-users', contactRoutes); // Contact routes (for viewing registered users)
 
 // Centralized Error Handling Middleware
-// Added comment to trigger redeploy
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(err.statusCode || 500).json({

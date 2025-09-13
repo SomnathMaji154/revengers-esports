@@ -39,25 +39,25 @@ router.post('/', isAuthenticated, upload.single('image'), async (req, res) => {
   let imageUrl = null;
 
   if (req.file) {
-    const filename = `manager-${Date.now()}.webp`;
-    const uploadsDir = path.join(__dirname, 'uploads');
-    const outputPath = path.join(uploadsDir, filename);
     try {
-      await sharp(req.file.buffer)
+      const processedImage = await sharp(req.file.buffer)
         .resize(300, 400, { // Standard size for manager cards
           fit: sharp.fit.cover,
           position: sharp.strategy.entropy
         })
         .webp({ quality: 80 })
-        .toFile(outputPath);
-      imageUrl = `/uploads/${filename}`;
+        .toBuffer();
+
+      const base64Image = processedImage.toString('base64');
+      imageUrl = `data:image/webp;base64,${base64Image}`;
     } catch (error) {
       console.error('Error processing manager image:', error);
       return res.status(500).json({ error: 'Error processing image' });
     }
   }
 
-  db.run('INSERT INTO managers (name, role, imageUrl) VALUES (?, ?, ?)', [name, role, imageUrl], function(err) {
+  const imageData = imageUrl ? imageUrl.split(',')[1] : null;
+  db.run('INSERT INTO managers (name, role, imageUrl, imageData) VALUES ($1, $2, $3, $4)', [name, role, imageUrl, imageData], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return console.error(err.message);
@@ -72,18 +72,17 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
   let imageUrl = null;
 
   if (req.file) {
-    const filename = `manager-${Date.now()}.webp`;
-    const uploadsDir = path.join(__dirname, 'uploads');
-    const outputPath = path.join(uploadsDir, filename);
     try {
-      await sharp(req.file.buffer)
+      const processedImage = await sharp(req.file.buffer)
         .resize(300, 400, {
           fit: sharp.fit.cover,
           position: sharp.strategy.entropy
         })
         .webp({ quality: 80 })
-        .toFile(outputPath);
-      imageUrl = `/uploads/${filename}`;
+        .toBuffer();
+
+      const base64Image = processedImage.toString('base64');
+      imageUrl = `data:image/webp;base64,${base64Image}`;
     } catch (error) {
       console.error('Error processing manager image:', error);
       return res.status(500).json({ error: 'Error processing image' });
@@ -92,7 +91,8 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
     return res.status(400).json({ error: 'No image file provided' });
   }
 
-  db.run('UPDATE managers SET imageUrl = ? WHERE id = ?', [imageUrl, id], function(err) {
+  const imageData = imageUrl ? imageUrl.split(',')[1] : null;
+  db.run('UPDATE managers SET imageUrl = $1, imageData = $2 WHERE id = $3', [imageUrl, imageData, id], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return console.error(err.message);

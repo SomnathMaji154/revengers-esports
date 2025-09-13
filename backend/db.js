@@ -1,92 +1,124 @@
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-const bcryptjs = require('bcryptjs');
-const fs = require('fs');
+const { Pool } = require('pg');
+const bcrypt = require('bcryptjs');
 
-const dbPath = path.join(__dirname, 'revengers.db');
-const db = new sqlite3.Database(dbPath);
-
-db.serialize(() => {
-  db.run(`CREATE TABLE IF NOT EXISTS players (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    jerseyNumber INTEGER,
-    imageUrl TEXT,
-    stars INTEGER,
-    joined_date DATETIME DEFAULT (DATETIME('now'))
-  )`, (err) => {
-    if (err) console.error('Error creating players table:', err.message);
-    else console.log('Players table ready');
-  });
-
-  db.run(`CREATE TABLE IF NOT EXISTS managers (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    role TEXT,
-    imageUrl TEXT
-  )`, (err) => {
-    if (err) console.error('Error creating managers table:', err.message);
-    else console.log('Managers table ready');
-  });
-
-  db.run(`CREATE TABLE IF NOT EXISTS trophies (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    year INTEGER,
-    imageUrl TEXT
-  )`, (err) => {
-    if (err) console.error('Error creating trophies table:', err.message);
-    else console.log('Trophies table ready');
-  });
-
-  db.run(`CREATE TABLE IF NOT EXISTS contact_submissions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL,
-    whatsapp TEXT NOT NULL,
-    submission_date DATETIME DEFAULT (DATETIME('now'))
-  )`, (err) => {
-    if (err) console.error('Error creating contact_submissions table:', err.message);
-    else console.log('Contact submissions table ready');
-  });
-
-  db.run(`CREATE TABLE IF NOT EXISTS admins (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL
-  )`, (err) => {
-    if (err) console.error('Error creating admins table:', err.message);
-    else {
-      console.log('Admins table ready');
-      db.get("SELECT COUNT(*) as count FROM admins", (err, row) => {
-        if (err) return console.error(err.message);
-        if (row.count === 0) {
-          bcryptjs.hash('adminpassword', 10, (err, hash) => {
-            if (err) console.error('Error hashing admin password:', err.message);
-            else {
-              db.run('INSERT INTO admins (username, password) VALUES (?, ?)', ['admin', hash], (err) => {
-                if (err) console.error('Error inserting default admin:', err.message);
-                else console.log('Default admin user created');
-              });
-            }
-          });
-        }
-      });
-    }
-  });
-
-  console.log('Database initialized. Tables are empty and ready for admin data entry.');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
-// Close database on app exit
-process.on('SIGINT', () => {
-  db.close((err) => {
-    if (err) {
-      console.error(err.message);
-    }
-    console.log('Database connection closed.');
-    process.exit(0);
-  });
+pool.connect((err) => {
+  if (err) {
+    console.error('Error connecting to PostgreSQL:', err.message);
+  } else {
+    console.log('Connected to PostgreSQL database.');
+    initializeDatabase();
+  }
 });
 
-module.exports = db;
+async function initializeDatabase() {
+  const tables = [
+    `CREATE TABLE IF NOT EXISTS admins (
+      id SERIAL PRIMARY KEY,
+      username VARCHAR(255) UNIQUE NOT NULL,
+      password TEXT NOT NULL
+    )`,
+    `CREATE TABLE IF NOT EXISTS players (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      jerseyNumber INTEGER NOT NULL,
+      imageUrl TEXT,
+      imageData TEXT,
+      stars INTEGER DEFAULT 0,
+      joined_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS managers (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      role VARCHAR(255) NOT NULL,
+      imageUrl TEXT,
+      imageData TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS trophies (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      year INTEGER NOT NULL,
+      imageUrl TEXT,
+      imageData TEXT
+    )`,
+    `CREATE TABLE IF NOT EXISTS contact_submissions (
+      id SERIAL PRIMARY KEY,
+      name VARCHAR(255) NOT NULL,
+      email VARCHAR(255) NOT NULL,
+      whatsapp VARCHAR(255) NOT NULL,
+      submission_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )`,
+    `CREATE TABLE IF NOT EXISTS sessions (
+      sid VARCHAR(255) PRIMARY KEY,
+      sess JSON NOT NULL,
+      expire TIMESTAMP NOT NULL
+    ) WITH OIDS FALSE;`
+  ];
+
+  for (const sql of tables) {
+    try {
+      await pool.query(sql);
+    } catch (err) {
+      console.error('Error creating table:', err.message);
+    }
+  }
+
+  // Create default admin if not exists
+  const defaultAdmin = { username: 'admin', password: 'adminpassword' };
+  try {
+    const res = await pool.query('SELECT * FROM admins WHERE username = $1', [defaultAdmin.username]);
+    if (res.rows.length === 0) {
+      const hash = await bcrypt.hash(defaultAdmin.password, 10);
+      await pool.query('INSERT INTO admins (username, password) VALUES ($1, $2)', [defaultAdmin.username, hash]);
+      console.log('Default admin created: username=admin, password=adminpassword');
+    }
+  } catch (err) {
+    console.error('Error creating default admin:', err.message);
+  }
+
+  console.log('Database initialized. Tables ready.');
+}
+
+// Helper functions to match existing API (callback-based for compatibility)
+module.exports = {
+  all: (sql, params = [], callback) => {
+    pool.query(sql, params, (err, res) => {
+      if (err) {
+        callback(err, null);
+      } else {
+        callback(null, res.rows);
+      }
+    });
+  },
+  get: (sql, params = [], callback) => {
+    pool.query(sql, params, (err, res) => {
+      if (err) {
+        callback(err, null);
+      } else {
+        callback(null, res.rows[0] || null);
+      }
+    });
+  },
+  run: (sql, params = [], callback) => {
+    pool.query(sql, params, (err, res) => {
+      if (err) {
+        callback(err);
+      } else {
+        callback(null, { lastID: res.rowCount > 0 ? res.rows[0].id : null, changes: res.rowCount });
+      }
+    });
+  },
+  close: (callback) => {
+    pool.end((err) => {
+      if (err) {
+        callback(err);
+      } else {
+        callback(null);
+      }
+    });
+  }
+};
