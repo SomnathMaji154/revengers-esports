@@ -42,13 +42,13 @@
 
     <main class="main-content">
         <section id="login-section" class="content-section">
-            <div class="container">
+            <div class="container glass-container">
                 <div class="section-header">
                     <h1 class="section-title">Admin Login</h1>
                     <p class="section-description">Please login to access the admin panel.</p>
                 </div>
                 
-                <div class="form-container">
+                <div class="form-container glass-card">
                     <form id="login-form" method="POST" action="/api/admin/login">
                         <div class="form-group">
                             <label for="username" class="form-label">Username:</label>
@@ -61,7 +61,6 @@
                                 <input type="password" id="password" name="password" class="form-input" required>
                                 <button type="button" id="toggle-password" class="toggle-password-btn">👁</button>
                             </div>
-                        </div>
                         
                         <button type="submit" class="form-submit">Login</button>
                     </form>
@@ -70,8 +69,8 @@
         </section>
 
         <section id="admin-section" class="content-section" style="display: none;">
-            <div class="container">
-                <div class="admin-panel">
+            <div class="container glass-container">
+                <div class="admin-panel glass-card">
                     <div class="admin-header">
                         <h2 class="admin-title">Admin Panel</h2>
                         <button id="logout-btn" class="btn btn-secondary">Logout</button>
@@ -86,7 +85,7 @@
                         <!-- Player Management -->
                         <div class="management-section" id="player-management">
                             <h3 class="management-title">Player Management</h3>
-                            <form id="add-player-form" class="form-container" enctype="multipart/form-data">
+                            <form id="add-player-form" class="form-container glass-card" enctype="multipart/form-data">
                                 <h4>Add New Player</h4>
                                 <div class="form-group">
                                     <label for="playerName" class="form-label">Name:</label>
@@ -134,7 +133,7 @@
                         <!-- Manager Management -->
                         <div class="management-section" id="manager-management">
                             <h3 class="management-title">Manager Management</h3>
-                            <form id="add-manager-form" class="form-container" enctype="multipart/form-data">
+                            <form id="add-manager-form" class="form-container glass-card" enctype="multipart/form-data">
                                 <h4>Add New Manager</h4>
                                 <div class="form-group">
                                     <label for="managerName" class="form-label">Name:</label>
@@ -178,7 +177,7 @@
                         <!-- Trophy Management -->
                         <div class="management-section" id="trophy-management">
                             <h3 class="management-title">Trophy Management</h3>
-                            <form id="add-trophy-form" class="form-container" enctype="multipart/form-data">
+                            <form id="add-trophy-form" class="form-container glass-card" enctype="multipart/form-data">
                                 <h4>Add New Trophy</h4>
                                 <div class="form-group">
                                     <label for="trophyName" class="form-label">Name:</label>
