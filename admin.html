@@ -693,14 +693,32 @@
                         credentials: 'include',
                     });
 
+                    const responseText = await response.text(); // Get response as text first
+
                     if (!response.ok) {
-                        const errorData = await response.json();
-                        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                        let errorMsg = `HTTP error! status: ${response.status}`;
+                        try {
+                            const errorData = JSON.parse(responseText); // Try to parse as JSON
+                            errorMsg = errorData.error || errorData.message || errorMsg;
+                        } catch (e) {
+                            // If parsing fails, the response was not JSON. Show the raw text.
+                            console.error("Server returned non-JSON error response:", responseText);
+                            errorMsg = `Server returned an unexpected response: ${responseText.substring(0, 200)}`;
+                        }
+                        throw new Error(errorMsg);
                     }
 
-                    await response.json();
-                    alert('Item added successfully!');
-                    callback();
+                    // If response is OK, we still expect JSON
+                    try {
+                        const result = JSON.parse(responseText);
+                        console.log(result.message || 'Item added successfully!');
+                        alert('Item added successfully!');
+                        callback();
+                    } catch (e) {
+                        console.error("Server returned non-JSON success response:", responseText);
+                        throw new Error(`Server returned an unexpected success response: ${responseText.substring(0, 200)}`);
+                    }
+
                 } catch (error) {
                     console.error('Error adding item:', error);
                     alert(`Error adding item: ${error.message}`);
