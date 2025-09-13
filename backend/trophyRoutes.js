@@ -173,7 +173,7 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
   const { id } = req.params;
 
   try {
-    // Get image URL to delete from Firebase
+      // Get image URL to delete from Cloudinary
     const trophy = await new Promise((resolve, reject) => {
       db.get("SELECT imageUrl FROM trophies WHERE id = $1", [id], (err, row) => {
         if (err) reject(err);
