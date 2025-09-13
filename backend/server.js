@@ -70,6 +70,9 @@ app.use(session({
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, '../')));
 
+// Serve upload files (images, logos, etc.)
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // API Routes
 app.use('/api', authRoutes); // Authentication routes
 app.use('/api/players', playerRoutes); // Player routes
