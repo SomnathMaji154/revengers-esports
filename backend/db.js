@@ -27,7 +27,6 @@ async function initializeDatabase() {
       name VARCHAR(255) NOT NULL,
       jerseyNumber INTEGER NOT NULL,
       imageUrl TEXT,
-      imageData TEXT,
       stars INTEGER DEFAULT 0,
       joined_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )`,
@@ -35,15 +34,13 @@ async function initializeDatabase() {
       id SERIAL PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
       role VARCHAR(255) NOT NULL,
-      imageUrl TEXT,
-      imageData TEXT
+      imageUrl TEXT
     )`,
     `CREATE TABLE IF NOT EXISTS trophies (
       id SERIAL PRIMARY KEY,
       name VARCHAR(255) NOT NULL,
       year INTEGER NOT NULL,
-      imageUrl TEXT,
-      imageData TEXT
+      imageUrl TEXT
     )`,
     `CREATE TABLE IF NOT EXISTS contact_submissions (
       id SERIAL PRIMARY KEY,
@@ -65,6 +62,16 @@ async function initializeDatabase() {
     } catch (err) {
       console.error('Error creating table:', err.message);
     }
+  }
+
+  // Migrate existing data - remove imageData if it exists
+  try {
+    await pool.query('ALTER TABLE IF EXISTS players DROP COLUMN IF EXISTS imageData');
+    await pool.query('ALTER TABLE IF EXISTS managers DROP COLUMN IF EXISTS imageData');
+    await pool.query('ALTER TABLE IF EXISTS trophies DROP COLUMN IF EXISTS imageData');
+    console.log('Database schema migrated successfully');
+  } catch (err) {
+    console.log('Schema migration skipped (columns may not exist):', err.message);
   }
 
   // Create default admin if not exists

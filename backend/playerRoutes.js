@@ -7,7 +7,24 @@ const { isAuthenticated } = require('./auth'); // Import isAuthenticated middlew
 
 const router = express.Router();
 
-const storage = multer.memoryStorage();
+const fs = require('fs');
+const path = require('path');
+
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir);
+  },
+  filename: function (req, file, cb) {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, 'player-' + uniqueSuffix + '.webp');
+  }
+});
+
 const upload = multer({ 
   storage: storage,
   limits: {
@@ -40,25 +57,33 @@ router.post('/', isAuthenticated, upload.single('image'), async (req, res) => { 
 
   if (req.file) {
     try {
-      const processedImage = await sharp(req.file.buffer)
+      // Process the uploaded file with Sharp
+      const processedImagePath = req.file.path.replace(/\.[^/.]+$/, ".webp");
+      await sharp(req.file.path)
         .resize(300, 400, { // Standard size for player cards
           fit: sharp.fit.cover,
           position: sharp.strategy.entropy
         })
         .webp({ quality: 80 })
-        .toBuffer();
+        .toFile(processedImagePath);
 
-      const base64Image = processedImage.toString('base64');
-      imageUrl = `data:image/webp;base64,${base64Image}`;
+      // Clean up original file
+      fs.unlinkSync(req.file.path);
+
+      // Store relative path for serving
+      imageUrl = `/uploads/${path.basename(processedImagePath)}`;
     } catch (error) {
       console.error('Error processing player image:', error);
+      // Clean up if processing failed
+      if (req.file && req.file.path) {
+        fs.unlinkSync(req.file.path);
+      }
       return res.status(500).json({ error: 'Error processing image' });
     }
   }
 
-  const sql = `INSERT INTO players (name, jerseyNumber, imageUrl, imageData, stars) VALUES ($1, $2, $3, $4, $5)`;
-  const imageData = imageUrl ? imageUrl.split(',')[1] : null;
-  const params = [name, jerseyNumber, imageUrl, imageData, stars];
+  const sql = `INSERT INTO players (name, jerseyNumber, imageUrl, stars) VALUES ($1, $2, $3, $4)`;
+  const params = [name, jerseyNumber, imageUrl, stars];
   
   db.run(sql, params, function(err) {
     if (err) {
@@ -76,27 +101,35 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
 
   if (req.file) {
     try {
-      const processedImage = await sharp(req.file.buffer)
+      // Process the uploaded file with Sharp
+      const processedImagePath = req.file.path.replace(/\.[^/.]+$/, ".webp");
+      await sharp(req.file.path)
         .resize(300, 400, {
           fit: sharp.fit.cover,
           position: sharp.strategy.entropy
         })
         .webp({ quality: 80 })
-        .toBuffer();
+        .toFile(processedImagePath);
 
-      const base64Image = processedImage.toString('base64');
-      imageUrl = `data:image/webp;base64,${base64Image}`;
+      // Clean up original file
+      fs.unlinkSync(req.file.path);
+
+      // Store relative path for serving
+      imageUrl = `/uploads/${path.basename(processedImagePath)}`;
     } catch (error) {
       console.error('Error processing player image:', error);
+      // Clean up if processing failed
+      if (req.file && req.file.path) {
+        fs.unlinkSync(req.file.path);
+      }
       return res.status(500).json({ error: 'Error processing image' });
     }
   } else {
     return res.status(400).json({ error: 'No image file provided' });
   }
 
-  const sql = 'UPDATE players SET imageUrl = $1, imageData = $2 WHERE id = $3';
-  const imageData = imageUrl ? imageUrl.split(',')[1] : null;
-  const params = [imageUrl, imageData, id];
+  const sql = 'UPDATE players SET imageUrl = $1 WHERE id = $2';
+  const params = [imageUrl, id];
   
   db.run(sql, params, function(err) {
     if (err) {
