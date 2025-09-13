@@ -27,7 +27,7 @@
         <section>
             <h1>Our Trophies</h1>
             <p>Our achievements in football esports tournaments and leagues.</p>
-            <div class="content-grid" id="trophies-grid">
+            <div class="players-grid" id="trophies-grid">
                 <!-- Trophy cards will be dynamically inserted here -->
             </div>
         </section>
@@ -58,14 +58,21 @@
                     }
 
                     trophies.forEach(trophy => {
-                        const achievementDiv = document.createElement('div');
-                        achievementDiv.className = 'achievement';
-                        achievementDiv.innerHTML = `
-                            <img src="${trophy.imageUrl || ''}" alt="${trophy.name}" style="width:100%;height:auto;border-radius:8px;">
-                            <h3>${trophy.name}</h3>
-                            <p>Year: ${trophy.year}</p>
+                        const trophyCard = document.createElement('div');
+                        trophyCard.className = 'player-card';
+                        
+                        trophyCard.innerHTML = `
+                            <div class="player-image-bg" style="background-image: url('${trophy.imageUrl || ''}')">
+                                <div class="card-overlay"></div>
+                                <div class="player-name">${trophy.name}</div>
+                                <div class="player-meta">
+                                    <span class="joined-date">Year: ${trophy.year}</span>
+                                    <div class="club-badge">RE</div>
+                                </div>
+                            </div>
                         `;
-                        trophiesGrid.appendChild(achievementDiv);
+                        
+                        trophiesGrid.appendChild(trophyCard);
                     });
                 } catch (error) {
                     console.error('Error fetching trophies:', error);

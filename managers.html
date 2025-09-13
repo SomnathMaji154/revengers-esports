@@ -27,7 +27,7 @@
         <section>
             <h1>Our Managers</h1>
             <p>Our dedicated management team guiding the football esports squad to victory.</p>
-            <div class="content-grid" id="managers-grid">
+            <div class="players-grid" id="managers-grid">
                 <!-- Manager cards will be dynamically inserted here -->
             </div>
         </section>
@@ -58,14 +58,21 @@
                     }
 
                     managers.forEach(manager => {
-                        const memberDiv = document.createElement('div');
-                        memberDiv.className = 'team-member';
-                        memberDiv.innerHTML = `
-                            <img src="${manager.imageUrl || ''}" alt="${manager.name}" style="width:100%;height:auto;border-radius:8px;">
-                            <h3>${manager.name}</h3>
-                            <p>Role: ${manager.role}</p>
+                        const managerCard = document.createElement('div');
+                        managerCard.className = 'player-card';
+                        
+                        managerCard.innerHTML = `
+                            <div class="player-image-bg" style="background-image: url('${manager.imageUrl || ''}')">
+                                <div class="card-overlay"></div>
+                                <div class="player-name">${manager.name}</div>
+                                <div class="player-meta">
+                                    <span class="joined-date">Role: ${manager.role}</span>
+                                    <div class="club-badge">RE</div>
+                                </div>
+                            </div>
                         `;
-                        managersGrid.appendChild(memberDiv);
+                        
+                        managersGrid.appendChild(managerCard);
                     });
                 } catch (error) {
                     console.error('Error fetching managers:', error);
