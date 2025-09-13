@@ -32,7 +32,10 @@
                 <label for="username">Username:</label>
                 <input type="text" id="username" name="username" required>
                 <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
+                <div class="password-container">
+                    <input type="password" id="password" name="password" required>
+                    <button type="button" id="toggle-password" class="toggle-password-btn">👁</button>
+                </div>
                 <button type="submit">Login</button>
             </form>
         </section>
@@ -174,13 +177,55 @@
         <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
     </footer>
 
+    <style>
+        .password-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .toggle-password-btn {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            color: #666;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .toggle-password-btn:hover {
+            color: #333;
+        }
+        
+        #password {
+            padding-right: 40px;
+        }
+    </style>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const loginSection = document.getElementById('login-section');
+            const togglePasswordBtn = document.getElementById('toggle-password');
+            const passwordInput = document.getElementById('password');
             const adminSection = document.getElementById('admin-section');
             const loginForm = document.getElementById('login-form');
             const logoutBtn = document.getElementById('logout-btn');
+
+            // Password visibility toggle
+            let passwordVisible = false;
+            togglePasswordBtn.addEventListener('click', function() {
+                passwordVisible = !passwordVisible;
+                passwordInput.type = passwordVisible ? 'text' : 'password';
+                togglePasswordBtn.textContent = passwordVisible ? '🙈' : '👁';
+            });
 
             let playerCropper; // Cropper.js instance for players
             let managerCropper; // Cropper.js instance for managers
