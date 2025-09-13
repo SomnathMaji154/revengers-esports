@@ -113,7 +113,7 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
 // DELETE /api/players/:id - Delete any player (admin)
 router.delete('/:id', isAuthenticated, (req, res) => { // Protected route
   const { id } = req.params;
-  db.run("DELETE FROM players WHERE id = ?", [id], function(err) {
+  db.run("DELETE FROM players WHERE id = $1", [id], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return console.error(err.message);

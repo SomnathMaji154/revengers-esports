@@ -106,7 +106,7 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
 
 // DELETE /api/managers/:id - Delete manager (protected route)
 router.delete('/:id', isAuthenticated, (req, res) => {
-  db.run("DELETE FROM managers WHERE id = ?", [req.params.id], function(err) {
+  db.run("DELETE FROM managers WHERE id = $1", [req.params.id], function(err) {
     if (err) {
       res.status(500).json({ error: err.message });
       return console.error(err.message);

@@ -7,7 +7,7 @@ const router = express.Router();
 // POST /api/contact - Submit contact form
 router.post('/', (req, res) => {
   const { name, email, whatsapp } = req.body;
-  const sql = `INSERT INTO contact_submissions (name, email, whatsapp) VALUES (?, ?, ?)`;
+  const sql = `INSERT INTO contact_submissions (name, email, whatsapp) VALUES ($1, $2, $3)`;
   const params = [name, email, whatsapp];
 
   db.run(sql, params, function(err) {
