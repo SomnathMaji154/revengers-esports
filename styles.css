@@ -507,8 +507,8 @@ section p {
     box-shadow: 
         0 40px 70px -20px rgba(0, 0, 0.45),
         0 50px rgba(239, 68, 0.25),
-        0 0 0 1px rgba(239, 68, 0.2);
-    border-color: rgba(239, 68, 0.25);
+        0 0 0 1px rgba(99, 102, 241, 0.25);
+    border-color: rgba(99, 102, 241, 0.25);
 }
 
 /* Flip card back content */
