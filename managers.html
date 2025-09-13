@@ -61,7 +61,7 @@
                         const memberDiv = document.createElement('div');
                         memberDiv.className = 'team-member';
                         memberDiv.innerHTML = `
-                            <img src="${manager.imageUrl ? manager.imageUrl : 'https://via.placeholder.com/300x400?text=No+Image'}" alt="${manager.name}" style="width:100%;height:auto;border-radius:8px;">
+                            <img src="${manager.imageUrl || ''}" alt="${manager.name}" style="width:100%;height:auto;border-radius:8px;">
                             <h3>${manager.name}</h3>
                             <p>Role: ${manager.role}</p>
                         `;

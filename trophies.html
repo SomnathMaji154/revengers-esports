@@ -61,7 +61,7 @@
                         const achievementDiv = document.createElement('div');
                         achievementDiv.className = 'achievement';
                         achievementDiv.innerHTML = `
-                            <img src="${trophy.imageUrl ? trophy.imageUrl : 'https://via.placeholder.com/400x300?text=No+Image'}" alt="${trophy.name}" style="width:100%;height:auto;border-radius:8px;">
+                            <img src="${trophy.imageUrl || ''}" alt="${trophy.name}" style="width:100%;height:auto;border-radius:8px;">
                             <h3>${trophy.name}</h3>
                             <p>Year: ${trophy.year}</p>
                         `;
