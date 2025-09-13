@@ -56,7 +56,7 @@ async function initializeDatabase() {
       sid VARCHAR(255) PRIMARY KEY,
       sess JSON NOT NULL,
       expire TIMESTAMP NOT NULL
-    ) WITH OIDS FALSE;`
+    );`
   ];
 
   for (const sql of tables) {
