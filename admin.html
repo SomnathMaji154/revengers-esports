@@ -324,9 +324,26 @@
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             gap: var(--space-md);
         }
+        
+        /* Cropper styles */
+        .cropper-container {
+            width: 100%;
+            height: 300px;
+            margin: 1rem 0;
+        }
+        
+        .cropper-container img {
+            max-width: 100%;
+            max-height: 300px;
+        }
+        
+        #playerCropperImg, #managerCropperImg, #trophyCropperImg {
+            max-width: 100%;
+            max-height: 300px;
+        }
     </style>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js?v=<%= Date.now() %>"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const loginSection = document.getElementById('login-section');
@@ -501,6 +518,10 @@
                                 viewMode: 1,
                                 autoCropArea: 0.8,
                                 background: false,
+                                movable: true,
+                                zoomable: true,
+                                rotatable: true,
+                                scalable: true
                             });
 
                             // Modal close functionality
@@ -525,18 +546,26 @@
 
                             // Confirm crop and add
                             cropConfirm.onclick = function() {
-                                const canvas = playerCropper.getCroppedCanvas({
-                                    width: 300,
-                                    height: 400
-                                });
-                                canvas.toBlob(function(blob) {
-                                    const croppedFile = new File([blob], 'cropped-image.webp', { type: 'image/webp' });
-                                    const dataTransfer = new DataTransfer();
-                                    dataTransfer.items.add(croppedFile);
-                                    playerImageInput.files = dataTransfer.files;
-                                    
-                                    playerModal.style.display = 'none';
-                                }, 'image/webp');
+                                if (playerCropper) {
+                                    const canvas = playerCropper.getCroppedCanvas({
+                                        width: 300,
+                                        height: 400,
+                                        imageSmoothingEnabled: false,
+                                        fillColor: '#fff'
+                                    });
+                                    canvas.toBlob(function(blob) {
+                                        if (blob) {
+                                            const croppedFile = new File([blob], 'cropped-image.webp', { type: 'image/webp' });
+                                            const dataTransfer = new DataTransfer();
+                                            dataTransfer.items.add(croppedFile);
+                                            playerImageInput.files = dataTransfer.files;
+                                            
+                                            playerModal.style.display = 'none';
+                                        } else {
+                                            alert('Failed to crop image. Please try again.');
+                                        }
+                                    }, 'image/webp', 0.8);
+                                }
                             };
                         };
                         reader.readAsDataURL(file);
@@ -587,6 +616,10 @@
                                 viewMode: 1,
                                 autoCropArea: 0.8,
                                 background: false,
+                                movable: true,
+                                zoomable: true,
+                                rotatable: true,
+                                scalable: true
                             });
 
                             // Modal close functionality
@@ -611,18 +644,26 @@
 
                             // Confirm crop and add
                             managerCropConfirm.onclick = function() {
-                                const canvas = managerCropper.getCroppedCanvas({
-                                    width: 300,
-                                    height: 400
-                                });
-                                canvas.toBlob(function(blob) {
-                                    const croppedFile = new File([blob], 'cropped-manager.webp', { type: 'image/webp' });
-                                    const dataTransfer = new DataTransfer();
-                                    dataTransfer.items.add(croppedFile);
-                                    managerImageInput.files = dataTransfer.files;
-                                    
-                                    managerModal.style.display = 'none';
-                                }, 'image/webp');
+                                if (managerCropper) {
+                                    const canvas = managerCropper.getCroppedCanvas({
+                                        width: 300,
+                                        height: 400,
+                                        imageSmoothingEnabled: false,
+                                        fillColor: '#fff'
+                                    });
+                                    canvas.toBlob(function(blob) {
+                                        if (blob) {
+                                            const croppedFile = new File([blob], 'cropped-manager.webp', { type: 'image/webp' });
+                                            const dataTransfer = new DataTransfer();
+                                            dataTransfer.items.add(croppedFile);
+                                            managerImageInput.files = dataTransfer.files;
+                                            
+                                            managerModal.style.display = 'none';
+                                        } else {
+                                            alert('Failed to crop image. Please try again.');
+                                        }
+                                    }, 'image/webp', 0.8);
+                                }
                             };
                         };
                         reader.readAsDataURL(file);
@@ -672,6 +713,10 @@
                                 viewMode: 1,
                                 autoCropArea: 0.8,
                                 background: false,
+                                movable: true,
+                                zoomable: true,
+                                rotatable: true,
+                                scalable: true
                             });
 
                             // Modal close functionality
@@ -696,18 +741,26 @@
 
                             // Confirm crop and add
                             trophyCropConfirm.onclick = function() {
-                                const canvas = trophyCropper.getCroppedCanvas({
-                                    width: 400,
-                                    height: 300
-                                });
-                                canvas.toBlob(function(blob) {
-                                    const croppedFile = new File([blob], 'cropped-trophy.webp', { type: 'image/webp' });
-                                    const dataTransfer = new DataTransfer();
-                                    dataTransfer.items.add(croppedFile);
-                                    trophyImageInput.files = dataTransfer.files;
-                                    
-                                    trophyModal.style.display = 'none';
-                                }, 'image/webp');
+                                if (trophyCropper) {
+                                    const canvas = trophyCropper.getCroppedCanvas({
+                                        width: 400,
+                                        height: 300,
+                                        imageSmoothingEnabled: false,
+                                        fillColor: '#fff'
+                                    });
+                                    canvas.toBlob(function(blob) {
+                                        if (blob) {
+                                            const croppedFile = new File([blob], 'cropped-trophy.webp', { type: 'image/webp' });
+                                            const dataTransfer = new DataTransfer();
+                                            dataTransfer.items.add(croppedFile);
+                                            trophyImageInput.files = dataTransfer.files;
+                                            
+                                            trophyModal.style.display = 'none';
+                                        } else {
+                                            alert('Failed to crop image. Please try again.');
+                                        }
+                                    }, 'image/webp', 0.8);
+                                }
                             };
                         };
                         reader.readAsDataURL(file);
