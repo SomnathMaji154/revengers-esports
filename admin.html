@@ -3,9 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Revengers Esports</title>
+    <meta name="description" content="Admin panel for Revengers Esports website management.">
+    <meta name="keywords" content="esports admin, football gaming management, revengers admin panel">
+    <meta name="author" content="Revengers Esports">
+    <meta property="og:title" content="Admin - Revengers Esports">
+    <meta property="og:description" content="Admin panel for Revengers Esports website management.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://revengers-esports.onrender.com/admin.html">
+    <meta property="og:image" content="/uploads/logo.webp">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Admin - Revengers Esports">
+    <meta name="twitter:description" content="Admin panel for Revengers Esports website management.">
+    <meta name="twitter:image" content="/uploads/logo.webp">
     <link rel="stylesheet" href="styles.css?v=<%= Date.now() %>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css?v=<%= Date.now() %>">
+    <link rel="icon" href="/uploads/logo.webp" type="image/webp">
+    <title>Admin - Revengers Esports</title>
 </head>
 <body>
     <header>
@@ -42,7 +55,7 @@
 
         <section id="admin-section" style="display: none;">
             <h1>Admin Panel</h1>
-            <button id="logout-btn" style="float: right;">Logout</button>
+            <button id="logout-btn" class="btn btn-danger" style="float: right;">Logout</button>
             <p>Welcome to the Admin Panel.</p>
             
             <div id="database-management">
