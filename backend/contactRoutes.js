@@ -20,7 +20,7 @@ router.post('/', (req, res) => {
 });
 
 // GET /api/registered-users - View registered users (protected route)
-router.get('/registered-users', isAuthenticated, (req, res) => {
+router.get('/', isAuthenticated, (req, res) => {
   db.all("SELECT name, email, whatsapp FROM contact_submissions ORDER BY submission_date DESC", [], (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
