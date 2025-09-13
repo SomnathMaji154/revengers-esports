@@ -20,6 +20,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const NODE_ENV = process.env.NODE_ENV || 'development';
 
+// Trust the first proxy
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(compression()); // Gzip/Brotli compression
 app.use(helmet({
