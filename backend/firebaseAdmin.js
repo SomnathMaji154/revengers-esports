@@ -7,7 +7,8 @@ const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
 // Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET // Read from environment variable
+  // Use the project ID to construct the actual GCS bucket name for API calls
+  storageBucket: `${process.env.FIREBASE_PROJECT_ID}.appspot.com`
 });
 
 const bucket = admin.storage().bucket();
