@@ -440,6 +440,86 @@ li {
   border-color: var(--color-primary-light);
 }
 
+/* Flipping Card Styles */
+.player-card-inner {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.player-card:hover .player-card-inner {
+  transform: rotateY(180deg);
+}
+
+.player-card-front, .player-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  border-radius: var(--radius-xl);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.player-card-front {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.player-card-back {
+  background: var(--color-white);
+  transform: rotateY(180deg);
+  padding: var(--space-md);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card-back-content {
+  padding: var(--space-md);
+}
+
+.card-back-name {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-sm);
+  color: var(--text-primary);
+}
+
+.card-back-details {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+}
+
+.card-back-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: var(--space-xs) 0;
+}
+
+.stat-label {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.stat-value {
+  color: var(--text-secondary);
+}
+
 .card-image {
   height: 200px;
   width: 100%;
