@@ -75,7 +75,8 @@
                         trophyCard.className = 'player-card';
                         
                         trophyCard.innerHTML = `
-                            <div class="player-image-bg" style="background-image: url('${trophy.imageUrl || ''}')">
+                        <div class="player-card-inner">
+                            <div class="player-card-front" style="background-image: url('${trophy.imageUrl || ''}')">
                                 <div class="card-overlay"></div>
                                 <div class="player-name">${trophy.name}</div>
                                 <div class="player-meta">
@@ -83,6 +84,23 @@
                                     <div class="club-badge">RE</div>
                                 </div>
                             </div>
+                            <div class="player-card-back">
+                                <div class="card-back-content">
+                                    <h3 class="card-back-name">${trophy.name}</h3>
+                                    <p class="card-back-details">Awarded in ${trophy.year}</p>
+                                    <div class="card-back-stats">
+                                        <div class="stat-item">
+                                            <span class="stat-label">Category:</span>
+                                            <span class="stat-value">Trophy</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">Year:</span>
+                                            <span class="stat-value">${trophy.year}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         `;
                         
                         trophiesGrid.appendChild(trophyCard);
