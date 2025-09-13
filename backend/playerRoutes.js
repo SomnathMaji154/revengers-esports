@@ -8,7 +8,6 @@ const { isAuthenticated } = require('./auth'); // Import isAuthenticated middlew
 const router = express.Router();
 
 const fs = require('fs');
-const path = require('path');
 
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
