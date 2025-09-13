@@ -20,35 +20,79 @@
     <title>Managers - Revengers Esports</title>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="header-logo">
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo">
+                <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="header-logo">
+            </div>
+            <nav class="main-navigation">
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="players.html" class="nav-link">Players</a></li>
+                    <li><a href="managers.html" class="nav-link active">Managers</a></li>
+                    <li><a href="trophies.html" class="nav-link">Trophies</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact Us</a></li>
+                    <li><a href="admin.html" class="nav-link">Admin</a></li>
+                </ul>
+            </nav>
         </div>
-        <nav>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="players.html">Players</a></li>
-                <li><a href="managers.html">Managers</a></li>
-                <li><a href="trophies.html">Trophies</a></li>
-                <li><a href="contact.html">Contact Us</a></li>
-                <li><a href="admin.html">Admin</a></li>
-            </ul>
-        </nav>
     </header>
 
-    <main>
-        <section>
-            <h1>Our Managers</h1>
-            <p>Our dedicated management team guiding the football esports squad to victory.</p>
-            <div class="players-grid" id="managers-grid">
-                <!-- Manager cards will be dynamically inserted here -->
+    <main class="main-content">
+        <section class="content-section">
+            <div class="container">
+                <div class="section-header">
+                    <h1 class="section-title">Our Managers</h1>
+                    <p class="section-description">Our dedicated management team guiding the football esports squad to victory.</p>
+                </div>
+                
+                <div class="card-grid" id="managers-grid">
+                    <!-- Manager cards will be dynamically inserted here -->
+                    <div class="player-card">
+                        <div class="card-content text-center">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-md">Loading managers...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
-
     </main>
 
-    <footer>
-        <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Revengers Esports</h3>
+                    <p>Dominating the football esports community with skill, strategy, and passion.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="players.html">Players</a></li>
+                        <li><a href="managers.html">Managers</a></li>
+                        <li><a href="trophies.html">Trophies</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Connect With Us</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">YouTube</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
+            </div>
+        </div>
     </footer>
 
     <script>
@@ -60,13 +104,13 @@
                 try {
                     const response = await fetch('/api/managers');
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        throw new Error('HTTP error! status: ' + response.status);
                     }
                     const managers = await response.json();
                     managersGrid.innerHTML = ''; // Clear existing managers
 
                     if (managers.length === 0) {
-                        managersGrid.innerHTML = '<p>No managers found.</p>';
+                        managersGrid.innerHTML = '<div class="player-card"><div class="card-content text-center"><p>No managers found.</p></div></div>';
                         return;
                     }
 
@@ -74,30 +118,28 @@
                         const managerCard = document.createElement('div');
                         managerCard.className = 'player-card';
                         
-                        managerCard.innerHTML = `
-                        <div class="player-card-inner">
-                            <div class="player-card-front" style="background-image: url('${manager.imageUrl || ''}')">
-                            </div>
-                            <div class="player-card-back">
-                                <div class="card-back-content">
-                                    <h3 class="card-back-name">${manager.name}</h3>
-                                    <p class="card-back-details">Role: ${manager.role}</p>
-                                    <div class="card-back-stats">
-                                        <div class="stat-item">
-                                            <span class="stat-label">Position:</span>
-                                            <span class="stat-value">Manager</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        `;
+                        managerCard.innerHTML = '<div class="player-card-inner">' +
+                            '<div class="player-card-front" style="background-image: url(\'' + (manager.imageUrl || '/uploads/default-manager.jpg') + '\')">' +
+                            '</div>' +
+                            '<div class="player-card-back">' +
+                                '<div class="card-back-content">' +
+                                    '<h3 class="card-back-name">' + manager.name + '</h3>' +
+                                    '<p class="card-back-details">Role: ' + manager.role + '</p>' +
+                                    '<div class="card-back-stats">' +
+                                        '<div class="stat-item">' +
+                                            '<span class="stat-label">Position:</span>' +
+                                            '<span class="stat-value">Manager</span>' +
+                                        '</div>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
                         
                         managersGrid.appendChild(managerCard);
                     });
                 } catch (error) {
                     console.error('Error fetching managers:', error);
-                    managersGrid.innerHTML = '<p>Error loading managers. Please try again later.</p>';
+                    managersGrid.innerHTML = '<div class="player-card"><div class="card-content text-center"><p>Error loading managers. Please try again later.</p></div></div>';
                 }
             }
 

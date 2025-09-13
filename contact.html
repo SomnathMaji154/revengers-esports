@@ -20,43 +20,90 @@
     <title>Contact Us - Revengers Esports</title>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="header-logo">
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo">
+                <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="header-logo">
+            </div>
+            <nav class="main-navigation">
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="players.html" class="nav-link">Players</a></li>
+                    <li><a href="managers.html" class="nav-link">Managers</a></li>
+                    <li><a href="trophies.html" class="nav-link">Trophies</a></li>
+                    <li><a href="contact.html" class="nav-link active">Contact Us</a></li>
+                    <li><a href="admin.html" class="nav-link">Admin</a></li>
+                </ul>
+            </nav>
         </div>
-        <nav>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="players.html">Players</a></li>
-                <li><a href="managers.html">Managers</a></li>
-                <li><a href="trophies.html">Trophies</a></li>
-                <li><a href="contact.html">Contact Us</a></li>
-                <li><a href="admin.html">Admin</a></li>
-            </ul>
-        </nav>
     </header>
 
-    <main>
-        <section>
-            <h1>Contact Us</h1>
-            <p>If you have any questions, please feel free to contact us using the form below.</p>
-            <form id="contact-form">
-                <label for="name">Full Name:</label>
-                <input type="text" id="name" name="name" required>
+    <main class="main-content">
+        <section class="content-section">
+            <div class="container">
+                <div class="section-header">
+                    <h1 class="section-title">Contact Us</h1>
+                    <p class="section-description">If you have any questions, please feel free to contact us using the form below.</p>
+                </div>
+                
+                <div class="form-container">
+                    <form id="contact-form">
+                        <div class="form-group">
+                            <label for="name" class="form-label">Full Name:</label>
+                            <input type="text" id="name" name="name" class="form-input" required>
+                        </div>
 
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
+                        <div class="form-group">
+                            <label for="email" class="form-label">Email:</label>
+                            <input type="email" id="email" name="email" class="form-input" required>
+                        </div>
 
-                <label for="whatsapp">WhatsApp Number:</label>
-                <input type="tel" id="whatsapp" name="whatsapp" required>
+                        <div class="form-group">
+                            <label for="whatsapp" class="form-label">WhatsApp Number:</label>
+                            <input type="tel" id="whatsapp" name="whatsapp" class="form-input" required>
+                        </div>
 
-                <button type="submit">Submit</button>
-            </form>
+                        <button type="submit" class="form-submit">Submit</button>
+                    </form>
+                </div>
+            </div>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Revengers Esports</h3>
+                    <p>Dominating the football esports community with skill, strategy, and passion.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="players.html">Players</a></li>
+                        <li><a href="managers.html">Managers</a></li>
+                        <li><a href="trophies.html">Trophies</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Connect With Us</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">YouTube</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
+            </div>
+        </div>
     </footer>
 
     <script src="script.js"></script>

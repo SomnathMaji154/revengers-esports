@@ -6,19 +6,19 @@ A modern, responsive website for Revengers Esports - a football esports team.
 
 This project is a complete redesign and enhancement of the Revengers Esports website with a focus on:
 
-- Modern, professional design with glassmorphism effects
+- Modern, professional design with sleek animations and transitions
 - Responsive layout that works on all devices
-- Improved user experience with smooth animations and transitions
+- Improved user experience with smooth interactions
 - Enhanced SEO and social media sharing capabilities
 - Production-ready optimizations
 
 ## Key Features
 
 ### Design Improvements
-- **Modern Glassmorphism Design**: Implemented a sleek glassmorphism design with gradient backgrounds and subtle animations
+- **Modern Professional Design**: Implemented a sleek, professional design with gradient backgrounds and subtle animations
 - **Responsive Layout**: Fully responsive design that adapts to all screen sizes
 - **Enhanced Typography**: Improved typography hierarchy with better readability
-- **Consistent Color Scheme**: Professional color scheme with primary red accents and dark backgrounds
+- **Consistent Color Scheme**: Professional color scheme with primary blue accents and clean backgrounds
 - **Smooth Animations**: Added subtle animations and transitions for better user experience
 
 ### Technical Optimizations
@@ -44,8 +44,6 @@ This project is a complete redesign and enhancement of the Revengers Esports web
 ├── contact.html            # Contact page
 ├── admin.html              # Admin panel
 ├── registered-users.html   # Registered users page
-├── player-management.html  # Player management page
-├── test-localstorage.html  # localStorage test page
 ├── styles.css              # Main stylesheet
 ├── script.js               # Main JavaScript file
 ├── backend/                # Backend files
@@ -57,9 +55,8 @@ This project is a complete redesign and enhancement of the Revengers Esports web
 │   ├── trophyRoutes.js     # Trophy API routes
 │   ├── contactRoutes.js    # Contact API routes
 │   └── cloudinaryConfig.js # Cloudinary configuration
-├── public/                 # Public assets
-│   └── uploads/            # Uploaded images
-└── uploads/                # Uploaded images (legacy)
+└── public/                 # Public assets
+    └── uploads/            # Uploaded images (including default placeholders)
 ```
 
 ## Getting Started
@@ -104,7 +101,7 @@ The application is configured for deployment on Render with:
 - **Compression**: Compression middleware
 
 ## Improvements Made
-1. **Enhanced CSS Design**: Completely redesigned the CSS with modern glassmorphism effects, improved animations, and responsive design
+1. **Enhanced CSS Design**: Completely redesigned the CSS with modern effects, improved animations, and responsive design
 2. **SEO Optimization**: Added comprehensive meta tags for better search engine visibility
 3. **Social Media Integration**: Implemented Open Graph and Twitter Card meta tags for better sharing
 4. **Performance Enhancements**: Added compression middleware and optimized asset loading

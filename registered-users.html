@@ -3,59 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="View registered users for Revengers Esports website.">
-    <meta name="keywords" content="esports users, football gaming community, revengers members">
+    <meta name="description" content="Registered users for Revengers Esports website.">
+    <meta name="keywords" content="esports, football, gaming, revengers, competitive gaming">
     <meta name="author" content="Revengers Esports">
     <meta property="og:title" content="Registered Users - Revengers Esports">
-    <meta property="og:description" content="View registered users for Revengers Esports website.">
+    <meta property="og:description" content="Registered users for Revengers Esports website.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://revengers-esports.onrender.com/registered-users.html">
     <meta property="og:image" content="/uploads/logo.webp">
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Registered Users - Revengers Esports">
-    <meta name="twitter:description" content="View registered users for Revengers Esports website.">
+    <meta name="twitter:description" content="Registered users for Revengers Esports website.">
     <meta name="twitter:image" content="/uploads/logo.webp">
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="/uploads/logo.webp" type="image/webp">
     <title>Registered Users - Revengers Esports</title>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="header-logo">
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo">
+                <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="header-logo">
+            </div>
+            <nav class="main-navigation">
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="players.html" class="nav-link">Players</a></li>
+                    <li><a href="managers.html" class="nav-link">Managers</a></li>
+                    <li><a href="trophies.html" class="nav-link">Trophies</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact Us</a></li>
+                    <li><a href="admin.html" class="nav-link">Admin</a></li>
+                </ul>
+            </nav>
         </div>
-        <nav>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="players.html">Players</a></li>
-                <li><a href="managers.html">Managers</a></li>
-                <li><a href="trophies.html">Trophies</a></li>
-                <li><a href="contact.html">Contact Us</a></li>
-                <li><a href="admin.html">Admin</a></li>
-            </ul>
-        </nav>
     </header>
 
-    <main>
-        <section>
-            <h1>Registered Users</h1>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>WhatsApp Number</th>
-                    </tr>
-                </thead>
-                <tbody id="user-data">
-                    <!-- User data will be inserted here by JavaScript -->
-                </tbody>
-            </table>
+    <main class="main-content">
+        <section class="content-section">
+            <div class="container">
+                <div class="section-header">
+                    <h1 class="section-title">Registered Users</h1>
+                    <p class="section-description">List of users who have registered through the contact form.</p>
+                </div>
+                
+                <div class="form-container">
+                    <table class="data-table">
+                        <thead class="table-header">
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>WhatsApp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-data" class="table-body">
+                            <!-- User data will be loaded dynamically -->
+                            <tr>
+                                <td colspan="3" class="text-center">
+                                    <div class="loading-spinner"></div>
+                                    <p class="mt-md">Loading registered users...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
     </main>
 
-    <footer>
-        <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Revengers Esports</h3>
+                    <p>Dominating the football esports community with skill, strategy, and passion.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="players.html">Players</a></li>
+                        <li><a href="managers.html">Managers</a></li>
+                        <li><a href="trophies.html">Trophies</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Connect With Us</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">YouTube</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
+            </div>
+        </div>
     </footer>
 
     <script src="script.js"></script>

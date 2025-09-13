@@ -20,47 +20,95 @@
     <title>Players - Revengers Esports</title>
 </head>
 <body>
-    <header>
-        <div class="logo">
-            <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="header-logo">
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo">
+                <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="header-logo">
+            </div>
+            <nav class="main-navigation">
+                <ul class="nav-menu">
+                    <li><a href="index.html" class="nav-link">Home</a></li>
+                    <li><a href="players.html" class="nav-link active">Players</a></li>
+                    <li><a href="managers.html" class="nav-link">Managers</a></li>
+                    <li><a href="trophies.html" class="nav-link">Trophies</a></li>
+                    <li><a href="contact.html" class="nav-link">Contact Us</a></li>
+                    <li><a href="admin.html" class="nav-link">Admin</a></li>
+                </ul>
+            </nav>
         </div>
-        <nav>
-            <ul>
-                <li><a href="index.html">Home</a></li>
-                <li><a href="players.html">Players</a></li>
-                <li><a href="managers.html">Managers</a></li>
-                <li><a href="trophies.html">Trophies</a></li>
-                <li><a href="contact.html">Contact Us</a></li>
-                <li><a href="admin.html">Admin</a></li>
-            </ul>
-        </nav>
     </header>
 
-    <main>
-        <section>
-            <h1>Our Players</h1>
-            <p>Meet our talented football esports players dominating virtual pitches.</p>
-            <div class="players-grid" id="players-grid">
-                <!-- Players will be loaded dynamically -->
+    <main class="main-content">
+        <section class="content-section">
+            <div class="container">
+                <div class="section-header">
+                    <h1 class="section-title">Our Players</h1>
+                    <p class="section-description">Meet our talented football esports players dominating virtual pitches.</p>
+                </div>
+                
+                <div class="card-grid" id="players-grid">
+                    <!-- Players will be loaded dynamically -->
+                    <div class="player-card">
+                        <div class="card-content text-center">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-md">Loading players...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
+
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>Revengers Esports</h3>
+                    <p>Dominating the football esports community with skill, strategy, and passion.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="index.html">Home</a></li>
+                        <li><a href="players.html">Players</a></li>
+                        <li><a href="managers.html">Managers</a></li>
+                        <li><a href="trophies.html">Trophies</a></li>
+                        <li><a href="contact.html">Contact Us</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Connect With Us</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Discord</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">YouTube</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 
     <script>
         // Load players from backend API and display them
         document.addEventListener('DOMContentLoaded', async function() {
             const playersGrid = document.getElementById('players-grid');
-            playersGrid.innerHTML = '<p>Loading players...</p>'; // Loading indicator
-
+            
             try {
                 const response = await fetch('/api/players');
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error('HTTP error! status: ' + response.status);
                 }
                 const players = await response.json();
 
                 if (players.length === 0) {
-                    playersGrid.innerHTML = '<p>No players found.</p>';
+                    playersGrid.innerHTML = '<div class="player-card"><div class="card-content text-center"><p>No players found.</p></div></div>';
                     return;
                 }
 
@@ -74,7 +122,7 @@
                     // Generate stars HTML
                     let starsHTML = '';
                     for (let i = 0; i < player.stars; i++) {
-                        starsHTML += '<span class="star gold">★</span>';
+                        starsHTML += '<span class="star filled">★</span>';
                     }
                     for (let i = player.stars; i < 5; i++) {
                         starsHTML += '<span class="star">★</span>';
@@ -87,41 +135,37 @@
                         day: 'numeric'
                     });
                     
-                    playerCard.innerHTML = `
-                        <div class="player-card-inner">
-                            <div class="player-card-front" style="background-image: url('${player.imageUrl || ''}')">
-                            </div>
-                            <div class="player-card-back">
-                                <div class="card-back-content">
-                                    <h3 class="card-back-name">${player.name}</h3>
-                                    <div class="card-back-stats">
-                                        <div class="stat-item">
-                                            <span class="stat-label">Jersey Number:</span>
-                                            <span class="stat-value">${player.jerseyNumber || '?'}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Rating:</span>
-                                            <span class="stat-value">${starsHTML}</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">Joined:</span>
-                                            <span class="stat-value">${joinedDate}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
+                    playerCard.innerHTML = '<div class="player-card-inner">' +
+                        '<div class="player-card-front" style="background-image: url(\'' + (player.imageUrl || '/uploads/default-player.jpg') + '\')">' +
+                        '</div>' +
+                        '<div class="player-card-back">' +
+                            '<div class="card-back-content">' +
+                                '<h3 class="card-back-name">' + player.name + '</h3>' +
+                                '<div class="card-back-stats">' +
+                                    '<div class="stat-item">' +
+                                        '<span class="stat-label">Jersey Number:</span>' +
+                                        '<span class="stat-value">' + (player.jerseyNumber || '?') + '</span>' +
+                                    '</div>' +
+                                    '<div class="stat-item">' +
+                                        '<span class="stat-label">Rating:</span>' +
+                                        '<span class="stat-value">' + starsHTML + '</span>' +
+                                    '</div>' +
+                                    '<div class="stat-item">' +
+                                        '<span class="stat-label">Joined:</span>' +
+                                        '<span class="stat-value">' + joinedDate + '</span>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
                     
                     playersGrid.appendChild(playerCard);
                 });
             } catch (error) {
                 console.error('Error loading players:', error);
-                playersGrid.innerHTML = '<p>Error loading players. Please try again later.</p>';
+                playersGrid.innerHTML = '<div class="player-card"><div class="card-content text-center"><p>Error loading players. Please try again later.</p></div></div>';
             }
         });
     </script>
-
-    <footer>
-        <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
-    </footer>
+</body>
+</html>

@@ -6,7 +6,6 @@ yarn-error.log*
 
 # Database
 backend/revengers.db
-# backend/uploads/
 
 # Environment variables
 .env
