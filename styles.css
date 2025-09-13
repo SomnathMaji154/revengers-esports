@@ -458,6 +458,7 @@ section p {
     backdrop-filter: var(--glass-blur);
     cursor: pointer;
     perspective: 1000px;
+    transform-style: preserve-3d;
 }
 
 .player-card-inner {
