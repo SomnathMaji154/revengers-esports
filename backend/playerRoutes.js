@@ -4,7 +4,7 @@ const sharp = require('sharp');
 const multer = require('multer');
 const db = require('./db'); // Import the database connection
 const { isAuthenticated } = require('./auth'); // Import isAuthenticated middleware
-const { bucket } = require('./firebaseAdmin'); // Import Firebase Storage bucket
+const { uploader } = require('./cloudinaryConfig'); // Import Cloudinary uploader
 
 const router = express.Router();
 
@@ -23,36 +23,52 @@ const upload = multer({
   }
 });
 
-// Helper function to upload image to Firebase Storage
-async function uploadImageToFirebase(fileBuffer, originalFilename, folder) {
+// Helper function to upload image to Cloudinary
+async function uploadImageToCloudinary(fileBuffer, originalFilename, folder) {
   const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-  const filename = `${folder}/processed-${uniqueSuffix}.webp`;
-  const file = bucket.file(filename);
+  const publicId = `${folder}/processed-${uniqueSuffix}`;
 
-  await file.save(fileBuffer, {
-    metadata: {
-      contentType: 'image/webp'
-    }
+  const uploadOptions = {
+    public_id: publicId,
+    format: 'webp',
+    quality: 'auto',
+    resource_type: 'image'
+  };
+
+  return new Promise((resolve, reject) => {
+    const uploadStream = uploader.upload_stream(uploadOptions, (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result.secure_url);
+      }
+    });
+    uploadStream.end(fileBuffer);
   });
-
-  // Make the file publicly accessible
-  await file.makePublic();
-
-  return `https://storage.googleapis.com/${bucket.name}/${filename}`;
 }
 
-// Helper function to delete image from Firebase Storage
-async function deleteImageFromFirebase(imageUrl) {
+// Helper function to delete image from Cloudinary
+async function deleteImageFromCloudinary(imageUrl) {
   if (!imageUrl) return;
 
   try {
-    const url = new URL(imageUrl);
-    const filename = url.pathname.substring(url.pathname.indexOf('/', 1) + 1); // Extract path after bucket name
-    const file = bucket.file(filename);
-    await file.delete();
-    console.log(`Deleted ${filename} from Firebase Storage.`);
+    const urlParts = new URL(imageUrl).pathname.split('/');
+    const filename = urlParts.pop().split('.')[0]; // e.g., 'processed-123'
+    const folder = urlParts.pop(); // 'players'
+    const publicId = `${folder}/${filename}`;
+
+    await new Promise((resolve, reject) => {
+      uploader.destroy(publicId, (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          console.log(`Deleted ${publicId} from Cloudinary.`);
+          resolve(result);
+        }
+      });
+    });
   } catch (error) {
-    console.error('Error deleting image from Firebase Storage:', error);
+    console.error('Error deleting image from Cloudinary:', error);
   }
 }
 
@@ -82,7 +98,7 @@ router.post('/', isAuthenticated, upload.single('image'), async (req, res) => { 
         .webp({ quality: 80 })
         .toBuffer();
 
-      imageUrl = await uploadImageToFirebase(processedImageBuffer, req.file.originalname, 'players');
+      imageUrl = await uploadImageToCloudinary(processedImageBuffer, req.file.originalname, 'players');
     } catch (error) {
       console.error('Error processing or uploading player image:', error);
       return res.status(500).json({ error: 'Error processing or uploading image' });
@@ -117,7 +133,7 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
       });
 
       if (oldPlayer && oldPlayer.imageUrl) {
-        await deleteImageFromFirebase(oldPlayer.imageUrl);
+        await deleteImageFromCloudinary(oldPlayer.imageUrl);
       }
 
       const processedImageBuffer = await sharp(req.file.buffer)
@@ -128,7 +144,7 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
         .webp({ quality: 80 })
         .toBuffer();
 
-      imageUrl = await uploadImageToFirebase(processedImageBuffer, req.file.originalname, 'players');
+      imageUrl = await uploadImageToCloudinary(processedImageBuffer, req.file.originalname, 'players');
     } catch (error) {
       console.error('Error processing or uploading player image:', error);
       return res.status(500).json({ error: 'Error processing or uploading image' });
@@ -166,7 +182,7 @@ router.delete('/:id', isAuthenticated, async (req, res) => { // Protected route
     });
 
     if (player && player.imageUrl) {
-      await deleteImageFromFirebase(player.imageUrl);
+      await deleteImageFromCloudinary(player.imageUrl);
     }
 
     db.run("DELETE FROM players WHERE id = $1", [id], function(err) {

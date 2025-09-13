@@ -7,8 +7,7 @@ const morgan = require('morgan');
 const compression = require('compression');
 const cors = require('cors');
 
-// Import Firebase config for CSP
-const { firebaseConfig } = require('./firebaseAdmin');
+// No Firebase config needed
 
 // Import modularized components
 const { pool } = require('./db'); // Get pool for session store
@@ -34,7 +33,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "https://revengers-esports.onrender.com", `https://storage.googleapis.com/${firebaseConfig.storageBucket}`],
+      imgSrc: ["'self'", "data:", "https://revengers-esports.onrender.com", "https://res.cloudinary.com", "https://cloudinary.com"],
       connectSrc: ["'self'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
