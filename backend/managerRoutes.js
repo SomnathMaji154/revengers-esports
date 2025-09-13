@@ -56,8 +56,10 @@ router.post('/', isAuthenticated, upload.single('image'), async (req, res) => {
 
   if (req.file) {
     try {
-      // Process the uploaded file with Sharp
-      const processedImagePath = req.file.path.replace(/\.[^/.]+$/, ".webp");
+      // Define a new path for the processed image
+      const processedImageName = `processed-${path.basename(req.file.filename)}`;
+      const processedImagePath = path.join(uploadDir, processedImageName);
+
       await sharp(req.file.path)
         .resize(300, 400, { // Standard size for manager cards
           fit: sharp.fit.cover,
@@ -70,7 +72,7 @@ router.post('/', isAuthenticated, upload.single('image'), async (req, res) => {
       fs.unlinkSync(req.file.path);
 
       // Store relative path for serving
-      imageUrl = `/uploads/${path.basename(processedImagePath)}`;
+      imageUrl = `/uploads/${processedImageName}`;
     } catch (error) {
       console.error('Error processing manager image:', error);
       // Clean up if processing failed
@@ -100,8 +102,10 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
 
   if (req.file) {
     try {
-      // Process the uploaded file with Sharp
-      const processedImagePath = req.file.path.replace(/\.[^/.]+$/, ".webp");
+      // Define a new path for the processed image
+      const processedImageName = `processed-${path.basename(req.file.filename)}`;
+      const processedImagePath = path.join(uploadDir, processedImageName);
+
       await sharp(req.file.path)
         .resize(300, 400, {
           fit: sharp.fit.cover,
@@ -114,7 +118,7 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
       fs.unlinkSync(req.file.path);
 
       // Store relative path for serving
-      imageUrl = `/uploads/${path.basename(processedImagePath)}`;
+      imageUrl = `/uploads/${processedImageName}`;
     } catch (error) {
       console.error('Error processing manager image:', error);
       // Clean up if processing failed
