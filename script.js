@@ -38,6 +38,14 @@ document.addEventListener('DOMContentLoaded', function() {
             } catch (error) {
                 console.error('Error submitting contact form:', error);
                 alert('Error submitting contact form. Please try again.');
+            }
+        });
+    }
+
+    // Fetch and display registered users on the registered-users.html page
+    const userDataBody = document.getElementById('user-data');
+    if (userDataBody) {
+        fetchRegisteredUsers();
     }
 
     async function checkAdminStatus() {
@@ -52,14 +60,6 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error checking admin status:', error);
             return false;
         }
-    }
-});
-    }
-
-    // Fetch and display registered users on the registered-users.html page
-    const userDataBody = document.getElementById('user-data');
-    if (userDataBody) {
-        fetchRegisteredUsers();
     }
 
     async function fetchRegisteredUsers() {

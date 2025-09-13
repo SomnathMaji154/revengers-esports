@@ -124,7 +124,7 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
 
   if (req.file) {
     try {
-      // Get old image URL to delete from Firebase
+      // Get old image URL to delete from Cloudinary
       const oldManager = await new Promise((resolve, reject) => {
         db.get("SELECT imageUrl FROM managers WHERE id = $1", [id], (err, row) => {
           if (err) reject(err);
