@@ -16,7 +16,7 @@ function isAuthenticated(req, res, next) {
 // Admin Login
 router.post('/admin/login', (req, res) => {
   const { username, password } = req.body;
-  db.get('SELECT * FROM admins WHERE username = ?', [username], async (err, admin) => {
+  db.get('SELECT * FROM admins WHERE username = $1', [username], async (err, admin) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
