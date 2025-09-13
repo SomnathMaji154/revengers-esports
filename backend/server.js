@@ -72,8 +72,9 @@ app.use(session({
   }
 }));
 
-// Serve static frontend files
+// Serve static frontend files from root and public directories
 app.use(express.static(path.join(__dirname, '../')));
+app.use(express.static(path.join(__dirname, '../public')));
 
 
 // API Routes
