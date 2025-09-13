@@ -191,7 +191,7 @@
 
             async function checkLoginStatus() {
                 try {
-                    const response = await fetch('/api/admin/status'); // Assuming a status endpoint
+                    const response = await fetch('/api/admin/status', { credentials: 'include' }); // Assuming a status endpoint
                     if (response.ok) {
                         const data = await response.json();
                         if (data.loggedIn) {
@@ -231,6 +231,7 @@
                         headers: {
                             'Content-Type': 'application/json',
                         },
+                        credentials: 'include',
                         body: JSON.stringify({ username, password })
                     });
 
@@ -254,7 +255,8 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                        }
+                        },
+                        credentials: 'include'
                     });
 
                     if (response.ok) {
@@ -643,6 +645,7 @@
                     const response = await fetch(endpoint, {
                         method: 'POST',
                         body: formData,
+                        credentials: 'include',
                     });
 
                     if (!response.ok) {
@@ -664,7 +667,7 @@
                 if (!confirm('Are you sure you want to delete this item?')) return;
 
                 try {
-                    const response = await fetch(`${endpoint}/${id}`, { method: 'DELETE' });
+                    const response = await fetch(`${endpoint}/${id}`, { method: 'DELETE', credentials: 'include' });
                     if (!response.ok) {
                         const errorData = await response.json();
                         throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
@@ -676,7 +679,7 @@
                     callback();
                 } catch (error) {
                     console.error(`Error deleting data from ${endpoint}:`, error);
-                    alert('Error deleting item. Please try again: ' + error.message);
+                    alert('Error deleting item. Please try again. ' + error.message);
                 }
             }
 
