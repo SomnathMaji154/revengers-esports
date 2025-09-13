@@ -74,7 +74,7 @@ async function deleteImageFromCloudinary(imageUrl) {
 
 // GET /api/managers - Fetch all managers
 router.get('/', (req, res) => {
-  db.all("SELECT id, name, role, imageUrl FROM managers", [], (err, rows) => {
+  db.all("SELECT id, name, role, imageUrl AS \"imageUrl\" FROM managers", [], (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return console.error(err.message);
