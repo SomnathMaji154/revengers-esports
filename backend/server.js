@@ -7,6 +7,9 @@ const morgan = require('morgan');
 const compression = require('compression');
 const cors = require('cors');
 
+// Import Firebase config for CSP
+const { firebaseConfig } = require('./firebaseAdmin');
+
 // Import modularized components
 const { pool } = require('./db'); // Get pool for session store
 const db = require('./db'); // Database connection and initialization
@@ -31,7 +34,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:", "https://revengers-esports.onrender.com", "https://via.placeholder.com"],
+      imgSrc: ["'self'", "data:", "https://revengers-esports.onrender.com", `https://storage.googleapis.com/${firebaseConfig.storageBucket}`],
       connectSrc: ["'self'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
@@ -73,8 +76,6 @@ app.use(session({
 // Serve static frontend files
 app.use(express.static(path.join(__dirname, '../')));
 
-// Serve upload files (images, logos, etc.)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // API Routes
 app.use('/api', authRoutes); // Authentication routes
