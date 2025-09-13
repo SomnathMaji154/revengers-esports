@@ -28,7 +28,7 @@ app.use(helmet({
       defaultSrc: ["'self'"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-      imgSrc: ["'self'", "data:"],
+      imgSrc: ["'self'", "data:", "https://revengers-esports.onrender.com"],
       connectSrc: ["'self'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
@@ -80,6 +80,11 @@ app.use('/api/managers', managerRoutes); // Manager routes
 app.use('/api/trophies', trophyRoutes); // Trophy routes
 app.use('/api/contact', contactRoutes); // Contact routes (for submission)
 app.use('/api/registered-users', contactRoutes); // Contact routes (for viewing registered users)
+
+// Health check route for Render (prevents cold starts on free tier)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 // Centralized Error Handling Middleware
 app.use((err, req, res, next) => {
