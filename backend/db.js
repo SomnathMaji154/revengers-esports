@@ -111,12 +111,24 @@ module.exports = {
     });
   },
   run: (sql, params = [], callback) => {
+    // Check if it's an INSERT statement and add RETURNING id if it's not there
+    if (sql.trim().toUpperCase().startsWith('INSERT') && !/RETURNING \*/i.test(sql) && !/RETURNING id/i.test(sql)) {
+      sql = sql.trim();
+      const semicolon = sql.endsWith(';') ? ';' : '';
+      if (semicolon) {
+        sql = sql.slice(0, -1);
+      }
+      sql = `${sql} RETURNING id${semicolon}`;
+    }
+
     pool.query(sql, params, (err, res) => {
       if (err) {
-        callback(err);
-      } else {
-        callback(null, { lastID: res.rowCount > 0 ? res.rows[0].id : null, changes: res.rowCount });
+        return callback(err);
       }
+      // lastID is specific to insert, for update/delete, changes is more relevant
+      const lastID = (res.rows && res.rows.length > 0 && res.rows[0].id) ? res.rows[0].id : null;
+      const changes = res.rowCount;
+      callback(null, { lastID, changes });
     });
   },
   close: (callback) => {
