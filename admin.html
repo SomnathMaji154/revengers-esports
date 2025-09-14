@@ -426,6 +426,21 @@
                 const playerCropConfirm = document.getElementById('playerCropConfirm');
                 const playerCropCancel = document.getElementById('playerCropCancel');
 
+                // Debug: Check if elements exist
+                console.log('Player elements found:', {
+                    playerImageInput: !!playerImageInput,
+                    playerModal: !!playerModal,
+                    playerModalImg: !!playerModalImg,
+                    playerCropperImg: !!playerCropperImg,
+                    playerCropConfirm: !!playerCropConfirm,
+                    playerCropCancel: !!playerCropCancel
+                });
+                
+                if (!playerImageInput || !playerModal) {
+                    console.error('Critical player modal elements missing!');
+                    return;
+                }
+
                 const managerImageInput = document.getElementById('managerImage');
                 const managerModal = document.getElementById('managerImageModal');
                 const managerModalImg = document.getElementById('managerImageModalImg');
@@ -447,13 +462,17 @@
 
             // Handle image selection for players - show modal
             playerImageInput.addEventListener('change', function(event) {
+                console.log('Player image input changed');
                 const files = event.target.files;
                 if (files && files.length > 0) {
+                    console.log('File selected:', files[0].name);
                     const file = files[0];
                     const reader = new FileReader();
                     reader.onload = function(e) {
+                        console.log('FileReader loaded, showing modal');
                         playerCropperImg.src = e.target.result;
                         playerModal.classList.add('active');
+                        console.log('Modal should be visible now');
                         
                         // Destroy existing cropper if it exists
                         if (playerCropper) {
@@ -463,6 +482,7 @@
                         
                         // Wait for image to load before initializing cropper
                         playerCropperImg.onload = function() {
+                            console.log('Image loaded, initializing cropper');
                             try {
                                 playerCropper = new Cropper(playerCropperImg, {
                                     aspectRatio: 3 / 4,

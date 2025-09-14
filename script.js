@@ -64,7 +64,8 @@ document.addEventListener('DOMContentLoaded', function() {
         menuToggle.addEventListener('mouseenter', showPanel);
         menuToggle.addEventListener('click', showPanel);
     } else if (menuToggle && isAdminPage) {
-        // For admin page, only use click (not hover) to avoid conflicts
+        // For admin page, enable both hover and click functionality
+        menuToggle.addEventListener('mouseenter', showPanel);
         menuToggle.addEventListener('click', function(e) {
             e.preventDefault();
             e.stopPropagation();
