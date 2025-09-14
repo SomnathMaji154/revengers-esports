@@ -217,28 +217,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
+            
+            // Only update admin link visibility if we have specific admin links (not side panel)
             const adminLink = document.getElementById('admin-link');
             if (adminLink) {
                 adminLink.style.display = data.loggedIn ? 'block' : 'none';
             }
+            
+            // ALWAYS keep side panel admin link visible for easy access
+            // Don't hide it based on login status
             const adminLinkSide = document.getElementById('admin-link-side');
             if (adminLinkSide) {
-                adminLinkSide.style.display = data.loggedIn ? 'block' : 'none';
+                adminLinkSide.style.display = 'block'; // Always visible
             }
+            
             return data.loggedIn;
         } catch (error) {
             console.error('Error checking admin status:', error);
             if (error.name === 'AbortError') {
                 showAlert('Request timeout. Please try again.', 'error');
             }
+            
+            // Only hide specific admin links, not side panel
             const adminLink = document.getElementById('admin-link');
             if (adminLink) {
                 adminLink.style.display = 'none';
             }
+            
+            // Keep side panel admin link visible even on error
             const adminLinkSide = document.getElementById('admin-link-side');
             if (adminLinkSide) {
-                adminLinkSide.style.display = 'none';
+                adminLinkSide.style.display = 'block'; // Always visible
             }
+            
             return false;
         }
     }
@@ -501,9 +512,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Initialize admin status check on all pages
-    checkAdminStatus();
-
+    // Note: checkAdminStatus() is called on demand, not automatically
+    // This prevents hiding the admin link unnecessarily
+    
     // Export functions to global scope for use in inline scripts
     window.fetchPlayers = fetchPlayers;
     window.fetchManagers = fetchManagers;
