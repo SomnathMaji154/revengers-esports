@@ -1,23 +1,5 @@
 // Enhanced frontend JavaScript with better error handling and performance optimizations
 document.addEventListener('DOMContentLoaded', function() {
-    // Dark mode toggle functionality with better persistence
-    const darkToggle = document.getElementById('dark-toggle');
-    if (darkToggle) {
-        const body = document.body;
-        const isDark = localStorage.getItem('darkMode') === 'enabled';
-        
-        if (isDark) {
-            body.classList.add('dark');
-            darkToggle.textContent = '☀️';
-        }
-
-        darkToggle.addEventListener('click', () => {
-            body.classList.toggle('dark');
-            const isNowDark = body.classList.contains('dark');
-            darkToggle.textContent = isNowDark ? '☀️' : '🌙';
-            localStorage.setItem('darkMode', isNowDark ? 'enabled' : 'disabled');
-        });
-    }
 
     // Enhanced loading overlay with better UX
     function showLoading(message = 'Loading...') {

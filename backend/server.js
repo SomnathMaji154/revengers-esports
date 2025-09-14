@@ -82,7 +82,7 @@ app.use(express.json({ limit: '10mb' }));
 let sessionConfig = {
   secret: process.env.SESSION_SECRET || 'super_secret_dev_key_change_in_production',
   resave: false,
-  saveUninitialized: false,
+ saveUninitialized: false,
   cookie: { 
     secure: NODE_ENV === 'production',
     httpOnly: true,
@@ -104,6 +104,8 @@ try {
   });
 } catch (err) {
   console.warn('Warning: Could not initialize PostgreSQL session store. Using memory store.');
+  // Explicitly set memory store as fallback
+  sessionConfig.store = new session.MemoryStore();
 }
 
 app.use(session(sessionConfig));

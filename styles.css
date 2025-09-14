@@ -234,6 +234,114 @@ a:hover {
   margin: var(--spacing-2xl) 0;
 }
 
+/* Card Grid for Players, Managers, Trophies */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--spacing-xl);
+  margin: var(--spacing-2xl) 0;
+}
+
+/* Player Card Styles */
+.player-card {
+  perspective: 1000px;
+  height: 400px;
+  position: relative;
+}
+
+.player-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.player-card:hover .player-card-inner {
+ transform: rotateY(180deg);
+}
+
+.player-card-front, .player-card-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+ border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.player-card-front {
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.player-card-back {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #2a2a2a 100%);
+  color: white;
+  transform: rotateY(180deg);
+  padding: var(--spacing-lg);
+  text-align: center;
+}
+
+.card-back-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+.card-back-name {
+  color: white;
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-2xl);
+}
+
+.card-back-details {
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: var(--spacing-md);
+  font-size: var(--font-size-base);
+}
+
+.card-back-stats {
+  width: 100%;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--spacing-sm);
+  padding: var(--spacing-xs) 0;
+}
+
+.stat-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--font-size-sm);
+}
+
+.stat-value {
+  color: white;
+  font-weight: 500;
+}
+
+/* Star Rating */
+.star {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: var(--font-size-lg);
+  margin: 0 1px;
+}
+
+.star.filled {
+  color: #ffd700;
+}
+
 .card-title {
   font-size: var(--font-size-xl);
   margin-bottom: var(--spacing-sm);

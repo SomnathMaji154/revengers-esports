@@ -3,35 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Things, Inc. - A team of evolved monkeys who believe in the power of collaborative creation and emergent play.">
-    <meta name="keywords" content="things, inc, collaborative creation, emergent play, software, creativity">
-    <meta name="author" content="Things, Inc.">
-    <meta property="og:title" content="Things, Inc.">
-    <meta property="og:description" content="A team of evolved monkeys who believe in the power of collaborative creation and emergent play.">
+    <meta name="description" content="Revengers Esports - Premier football esports team. View players, managers, trophies, and more.">
+    <meta name="keywords" content="revengers esports, football, gaming, players, managers, trophies">
+    <meta name="author" content="Revengers Esports">
+    <meta property="og:title" content="Revengers Esports">
+    <meta property="og:description" content="Join the Revengers revolution in esports football.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://revengers-esports.onrender.com">
     <meta property="og:image" content="/uploads/logo.webp">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Things, Inc.">
-    <meta name="twitter:description" content="A team of evolved monkeys who believe in the power of collaborative creation and emergent play.">
+    <meta name="twitter:title" content="Revengers Esports">
+    <meta name="twitter:description" content="Join the Revengers revolution in esports football.">
     <meta name="twitter:image" content="/uploads/logo.webp">
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="/uploads/logo.webp" type="image/webp">
     <link rel="manifest" href="/manifest.json">
-    <title>Things, Inc.</title>
+    <title>Revengers Esports</title>
 </head>
 <body>
     <header class="site-header">
         <div class="container header-container">
             <div class="logo">
-                Things, Inc.
+                <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="logo-img">
+                Revengers Esports
             </div>
             <nav class="main-navigation">
                 <ul class="nav-menu">
                     <li><a href="index.html" class="nav-link active">Home</a></li>
-                    <li><a href="about.html" class="nav-link">About us</a></li>
-                    <li><a href="log-book.html" class="nav-link">Log book</a></li>
+                    <li><a href="players.html" class="nav-link">Players</a></li>
+                    <li><a href="managers.html" class="nav-link">Managers</a></li>
+                    <li><a href="trophies.html" class="nav-link">Trophies</a></li>
+                    <li><a href="about.html" class="nav-link">About</a></li>
                     <li><a href="contact.html" class="nav-link">Contact</a></li>
+                    <li><a href="admin.html" class="nav-link" id="admin-link" style="display: none;">Admin</a></li>
                 </ul>
             </nav>
         </div>
@@ -40,92 +44,40 @@
     <main class="main-content">
         <section class="hero-section">
             <div class="container">
-                <h1 class="hero-title">Hello!<br>We are</h1>
-                <p class="hero-subtitle">Welcome to Things, Inc. We are a team of evolved monkeys who believe in the power of collaborative creation and emergent play. We believe that technology can be a source of good, and that weird > normal.</p>
-                <a href="#our-things" class="hero-cta">
-                    <span>Our Things</span>
-                    <svg width="16" height="16" viewBox="0 16 16" fill="none">
-                        <path d="M8 15L15 8L8 1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <path d="M1 8H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
+                <h1 class="hero-title">Welcome to Revengers Esports</h1>
+                <p class="hero-subtitle">The ultimate football esports team dominating the virtual pitch. Join our revolution!</p>
+                <a href="#featured-players" class="hero-cta">
+                    <span>Meet the Team</span>
                 </a>
             </div>
         </section>
 
-        <section class="content-section" id="our-things">
+        <section class="content-section" id="featured-players">
             <div class="container">
                 <div class="text-center mb-3xl">
-                    <h2>Our Things</h2>
-                    <p class="hero-subtitle">2024 Apple design award</p>
+                    <h2>Featured Players</h2>
+                    <p class="hero-subtitle">Our star players ready to conquer</p>
                 </div>
-                
-                <div class="content-grid">
-                    <div class="content-card">
-                        <h3 class="card-title">Rooms</h3>
-                        <p class="card-description">Create & browse 3D, interactive rooms.</p>
-                        <a href="rooms.html" class="btn btn-outline">Explore</a>
-                    </div>
-                    
-                    <div class="content-card">
-                        <h3 class="card-title">A Bunch of Things</h3>
-                        <p class="card-description">Worlds<br>Coming... eventually</p>
-                        <button class="btn btn-outline" disabled>Coming Soon</button>
-                    </div>
+                <div class="content-grid" id="players-grid">
+                    <!-- Dynamic content loaded by script.js -->
                 </div>
-                
-                <div class="text-center mt-3xl">
-                    <h3>We make software that</h3>
-                    <p class="hero-subtitle">
-                        we wish we had as kids<br>
-                        and try to have fun<br>
-                        while we're at it
-                    </p>
-                    <a href="about.html" class="btn btn-primary">Learn more about us</a>
-                </div>
-            </div>
-        </section>
-
-        <section class="content-section">
-            <div class="container">
-                <div class="text-center mb-3xl">
-                    <h2>Log Book</h2>
-                    <p class="hero-subtitle">View all logs</p>
-                </div>
-                
-                <div class="content-grid">
-                    <div class="content-card">
-                        <div class="mb-sm">
-                            <span class="text-secondary">Log</span>
-                            <span class="text-secondary">007</span>
-                        </div>
-                        <h3 class="card-title">Making Rooms 3.0</h3>
-                        <p class="card-description">2024.11.29<br>From Creator to Team Member: My Journey with Rooms</p>
-                        <a href="log-book.html" class="btn btn-outline">Read log</a>
-                    </div>
-                    
-                    <div class="content-card">
-                        <div class="mb-sm">
-                            <span class="text-secondary">Log</span>
-                            <span class="text-secondary">006</span>
-                        </div>
-                        <h3 class="card-title">From BASIC to Rooms.xyz</h3>
-                        <p class="card-description">2024.11.19<br>How I learned to code and built a platform</p>
-                        <a href="log-book.html" class="btn btn-outline">Read log</a>
-                    </div>
-                    
-                    <div class="content-card">
-                        <div class="mb-sm">
-                            <span class="text-secondary">Log</span>
-                            <span class="text-secondary">004</span>
-                        </div>
-                        <h3 class="card-title">Programming in Rooms.xyz (Part 3)</h3>
-                        <p class="card-description">2023.05.2<br>Advanced features and user feedback</p>
-                        <a href="log-book.html" class="btn btn-outline">Read log</a>
-                    </div>
-                </div>
-                
                 <div class="text-center mt-xl">
-                    <a href="log-book.html" class="btn btn-primary">View All Logs</a>
+                    <a href="players.html" class="btn btn-primary">View All Players</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section" id="trophies-section">
+            <div class="container">
+                <div class="text-center mb-3xl">
+                    <h2>Our Trophies</h2>
+                    <p class="hero-subtitle">Achievements that define our legacy</p>
+                </div>
+                <div class="content-grid" id="trophies-grid">
+                    <!-- Dynamic content loaded by script.js -->
+                </div>
+                <div class="text-center mt-xl">
+                    <a href="trophies.html" class="btn btn-primary">View All Trophies</a>
                 </div>
             </div>
         </section>
@@ -133,16 +85,36 @@
         <section class="content-section">
             <div class="container">
                 <div class="text-center mb-3xl">
-                    <h2>Stay up to date with all things Things</h2>
-                    <p class="hero-subtitle">Join our mailing list to be the first to know about new features and releases.</p>
+                    <h2>Management Team</h2>
+                    <p class="hero-subtitle">Leaders driving our success</p>
                 </div>
-                
+                <div class="content-grid" id="managers-grid">
+                    <!-- Dynamic content loaded by script.js -->
+                </div>
+                <div class="text-center mt-xl">
+                    <a href="managers.html" class="btn btn-primary">View All Managers</a>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="text-center mb-3xl">
+                    <h2>Join the Revengers</h2>
+                    <p class="hero-subtitle">Get in touch and be part of the team.</p>
+                </div>
                 <div class="form-container">
-                    <form id="newsletter-form">
+                    <form id="contact-form">
                         <div class="form-group">
-                            <input type="email" class="form-input" placeholder="Your email address" required>
+                            <input type="text" class="form-input" id="contact-name" placeholder="Your Name" required>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">Subscribe</button>
+                        <div class="form-group">
+                            <input type="email" class="form-input" id="contact-email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" class="form-input" id="contact-whatsapp" placeholder="WhatsApp Number" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Submit</button>
                     </form>
                 </div>
             </div>
@@ -153,92 +125,88 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>Things, Inc.</h3>
-                    <p>A team of evolved monkeys who believe in the power of collaborative creation and emergent play.</p>
+                    <h3>Revengers Esports</h3>
+                    <p>Dominating the esports football world with skill and passion.</p>
                 </div>
-                
                 <div class="footer-section">
                     <h3>Quick Links</h3>
                     <ul class="footer-links">
                         <li><a href="index.html">Home</a></li>
-                        <li><a href="about.html">About us</a></li>
-                        <li><a href="log-book.html">Log book</a></li>
+                        <li><a href="players.html">Players</a></li>
+                        <li><a href="managers.html">Managers</a></li>
+                        <li><a href="trophies.html">Trophies</a></li>
+                        <li><a href="about.html">About</a></li>
                         <li><a href="contact.html">Contact</a></li>
-                        <li><a href="rooms.html">Rooms</a></li>
-                        <li><a href="a-bunch-of-things.html">A Bunch of Things</a></li>
                     </ul>
                 </div>
-                
                 <div class="footer-section">
                     <h3>Follow us</h3>
                     <ul class="footer-links">
-                        <li><a href="#">Discord</a></li>
-                        <li><a href="#">Tiktok</a></li>
                         <li><a href="#">Instagram</a></li>
-                        <li><a href="#">X/Twitter</a></li>
-                        <li><a href="#">Youtube</a></li>
-                        <li><a href="#">Threads</a></li>
+                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">YouTube</a></li>
+                        <li><a href="#">Discord</a></li>
                     </ul>
                 </div>
             </div>
-            
             <div class="footer-bottom">
-                <p>© Things Inc. 2025</p>
-                <p><a href="#">Terms & Conditions</a> • <a href="#">Privacy Policy</a> • <a href="#">Media Assets</a></p>
+                <p>&copy; Revengers Esports 2025</p>
+                <p><a href="#">Privacy Policy</a> • <a href="#">Terms of Service</a></p>
             </div>
         </div>
     </footer>
 
+    <script src="script.js"></script>
     <script>
-        // Simple animation triggers
+        // Initialize home page specific functionality
         document.addEventListener('DOMContentLoaded', function() {
-            // Add scroll animations
-            const observerOptions = {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
-            };
-            
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.animationDelay = '0.1s';
-                        entry.target.style.animationPlayState = 'running';
-                    }
-                });
-            }, observerOptions);
-            
-            // Observe content cards
-            document.querySelectorAll('.content-card').forEach(card => {
-                card.style.animation = 'fadeInUp 0.6s ease-out both';
-                card.style.animationPlayState = 'paused';
-                observer.observe(card);
-            });
-            
-            // Newsletter form submission
-            const newsletterForm = document.getElementById('newsletter-form');
-            if (newsletterForm) {
-                newsletterForm.addEventListener('submit', function(e) {
+            loadHomeContent();
+            checkAdminStatus();
+
+            // Contact form submission
+            const contactForm = document.getElementById('contact-form');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    const email = this.querySelector('input[type="email"]').value;
-                    alert(`Thank you for subscribing with ${email}! You'll hear from us soon.`);
-                    this.reset();
+                    const name = document.getElementById('contact-name').value;
+                    const email = document.getElementById('contact-email').value;
+                    const whatsapp = document.getElementById('contact-whatsapp').value;
+                    submitContactForm(name, email, whatsapp);
                 });
             }
-            
-            // Smooth scrolling for anchor links
+
+            // Smooth scrolling
             document.querySelectorAll('a[href^="#"]').forEach(anchor => {
                 anchor.addEventListener('click', function (e) {
                     e.preventDefault();
                     const target = document.querySelector(this.getAttribute('href'));
                     if (target) {
-                        target.scrollIntoView({
-                            behavior: 'smooth',
-                            block: 'start'
-                        });
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 });
             });
         });
+
+        // Home page specific: Load dynamic content
+        async function loadHomeContent() {
+            try {
+                // Load 3 featured players
+                const players = await fetchPlayers(3);
+                displayPlayers(players, 'players-grid');
+
+                // Load 3 trophies
+                const trophies = await fetchTrophies(3);
+                displayTrophies(trophies, 'trophies-grid');
+
+                // Load 3 managers
+                const managers = await fetchManagers(3);
+                displayManagers(managers, 'managers-grid');
+            } catch (error) {
+                console.error('Error loading home content:', error);
+                // Fallback static content if API fails
+                document.getElementById('players-grid').innerHTML = '<p class="text-center">Players loading...</p>';
+            }
+        }
     </script>
 </body>
 </html>

@@ -12,15 +12,37 @@ const dbConfig = {
 
 const pool = new Pool(dbConfig);
 
+// Mock data storage for when database is not available
+let mockData = {
+  players: [],
+  managers: [],
+  trophies: [],
+  contact_submissions: [],
+  admins: []
+};
+
+// Add default admin for mock mode
+if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
+  const defaultAdmin = { username: 'admin', password: process.env.DEFAULT_ADMIN_PASSWORD || 'adminpassword' };
+  mockData.admins.push({
+    id: 1,
+    username: defaultAdmin.username,
+    password: defaultAdmin.password // In real implementation, this would be hashed
+  });
+  console.log('Mock admin created:', mockData.admins[0]);
+}
+
 // Test database connection
 pool.query('SELECT NOW()', (err, res) => {
   if (err) {
     console.warn('Warning: Could not connect to PostgreSQL database. Running in mock mode.');
     console.warn('For full functionality, please configure DATABASE_URL environment variable.');
     // Database operations will be mocked
+    global.MOCK_MODE = true;
   } else {
     console.log('Connected to PostgreSQL database.');
     initializeDatabase();
+    global.MOCK_MODE = false;
   }
 });
 
@@ -121,51 +143,129 @@ async function initializeDatabase() {
 // Helper functions to match existing API (callback-based for compatibility)
 module.exports = {
   all: (sql, params = [], callback) => {
-    pool.query(sql, params, (err, res) => {
-      if (err) {
-        callback(err, null);
+    if (global.MOCK_MODE) {
+      // Mock implementation for SELECT queries
+      const table = sql.match(/FROM\s+(\w+)/i);
+      if (table) {
+        const tableName = table[1];
+        if (mockData[tableName]) {
+          callback(null, mockData[tableName]);
+        } else {
+          callback(null, []);
+        }
       } else {
-        callback(null, res.rows);
+        callback(null, []);
       }
-    });
+    } else {
+      pool.query(sql, params, (err, res) => {
+        if (err) {
+          callback(err, null);
+        } else {
+          callback(null, res.rows);
+        }
+      });
+    }
   },
   get: (sql, params = [], callback) => {
-    pool.query(sql, params, (err, res) => {
-      if (err) {
-        callback(err, null);
+    if (global.MOCK_MODE) {
+      // Mock implementation for single row SELECT queries
+      const table = sql.match(/FROM\s+(\w+)/i);
+      if (table) {
+        const tableName = table[1];
+        if (mockData[tableName]) {
+          // Find matching record by username parameter
+          if (params.length > 0 && tableName === 'admins') {
+            const username = params[0];
+            const admin = mockData[tableName].find(a => a.username === username);
+            callback(null, admin || null);
+          } else if (mockData[tableName].length > 0) {
+            callback(null, mockData[tableName][0]);
+          } else {
+            callback(null, null);
+          }
+        } else {
+          callback(null, null);
+        }
       } else {
-        callback(null, res.rows[0] || null);
+        callback(null, null);
       }
-    });
+    } else {
+      pool.query(sql, params, (err, res) => {
+        if (err) {
+          callback(err, null);
+        } else {
+          callback(null, res.rows[0] || null);
+        }
+      });
+    }
   },
   run: (sql, params = [], callback) => {
-    // Check if it's an INSERT statement and add RETURNING id if it's not there
-    if (sql.trim().toUpperCase().startsWith('INSERT') && !/RETURNING \*/i.test(sql) && !/RETURNING id/i.test(sql)) {
-      sql = sql.trim();
-      const semicolon = sql.endsWith(';') ? ';' : '';
-      if (semicolon) {
-        sql = sql.slice(0, -1);
+    if (global.MOCK_MODE) {
+      // Mock implementation for INSERT/UPDATE/DELETE queries
+      try {
+        if (sql.trim().toUpperCase().startsWith('INSERT')) {
+          const table = sql.match(/INTO\s+(\w+)/i);
+          if (table) {
+            const tableName = table[1];
+            if (mockData[tableName]) {
+              const newId = mockData[tableName].length + 1;
+              // For contact submissions, add the data
+              if (tableName === 'contact_submissions') {
+                const [name, email, whatsapp] = params;
+                mockData[tableName].push({
+                  id: newId,
+                  name: name,
+                  email: email,
+                  whatsapp: whatsapp,
+                  submission_date: new Date().toISOString()
+                });
+              }
+              callback(null, { lastID: newId, changes: 1 });
+            } else {
+              callback(null, { lastID: 1, changes: 1 });
+            }
+          } else {
+            callback(null, { lastID: 1, changes: 1 });
+          }
+        } else {
+          callback(null, { lastID: null, changes: 1 });
+        }
+      } catch (err) {
+        callback(err);
       }
-      sql = `${sql} RETURNING id${semicolon}`;
-    }
+    } else {
+      // Check if it's an INSERT statement and add RETURNING id if it's not there
+      if (sql.trim().toUpperCase().startsWith('INSERT') && !/RETURNING \*/i.test(sql) && !/RETURNING id/i.test(sql)) {
+        sql = sql.trim();
+        const semicolon = sql.endsWith(';') ? ';' : '';
+        if (semicolon) {
+          sql = sql.slice(0, -1);
+        }
+        sql = `${sql} RETURNING id${semicolon}`;
+      }
 
-    pool.query(sql, params, (err, res) => {
-      if (err) {
-        return callback(err);
-      }
-      // lastID is specific to insert, for update/delete, changes is more relevant
-      const lastID = (res.rows && res.rows.length > 0 && res.rows[0].id) ? res.rows[0].id : null;
-      const changes = res.rowCount;
-      callback(null, { lastID, changes });
-    });
+      pool.query(sql, params, (err, res) => {
+        if (err) {
+          return callback(err);
+        }
+        // lastID is specific to insert, for update/delete, changes is more relevant
+        const lastID = (res.rows && res.rows.length > 0 && res.rows[0].id) ? res.rows[0].id : null;
+        const changes = res.rowCount;
+        callback(null, { lastID, changes });
+      });
+    }
   },
   close: (callback) => {
-    pool.end((err) => {
-      if (err) {
-        callback(err);
-      } else {
-        callback(null);
-      }
-    });
+    if (global.MOCK_MODE) {
+      callback(null);
+    } else {
+      pool.end((err) => {
+        if (err) {
+          callback(err);
+        } else {
+          callback(null);
+        }
+      });
+    }
   }
 };

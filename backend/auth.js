@@ -56,17 +56,34 @@ router.post('/admin/login', (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
     try {
-      const match = await bcrypt.compare(password, admin.password);
-      if (match) {
-        // Ensure session exists before setting properties
-        if (req.session) {
-          req.session.isAdmin = true;
-          res.json({ message: 'Logged in successfully' });
+      // Check if we're in mock mode
+      if (global.MOCK_MODE) {
+        // In mock mode, compare plain text password
+        if (password === admin.password) {
+          // Ensure session exists before setting properties
+          if (req.session) {
+            req.session.isAdmin = true;
+            res.json({ message: 'Logged in successfully' });
+          } else {
+            res.status(503).json({ error: 'Session service unavailable' });
+          }
         } else {
-          res.status(503).json({ error: 'Session service unavailable' });
+          res.status(400).json({ message: 'Invalid credentials' });
         }
       } else {
-        res.status(400).json({ message: 'Invalid credentials' });
+        // In real mode, use bcrypt
+        const match = await bcrypt.compare(password, admin.password);
+        if (match) {
+          // Ensure session exists before setting properties
+          if (req.session) {
+            req.session.isAdmin = true;
+            res.json({ message: 'Logged in successfully' });
+          } else {
+            res.status(503).json({ error: 'Session service unavailable' });
+          }
+        } else {
+          res.status(400).json({ message: 'Invalid credentials' });
+        }
       }
     } catch (bcryptErr) {
       console.error('Bcrypt error:', bcryptErr);
