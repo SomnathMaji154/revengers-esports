@@ -512,10 +512,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const ensureAdminLinkVisible = () => {
         const adminLinkSide = document.getElementById('admin-link-side');
         if (adminLinkSide) {
+            // Force all possible visibility properties
             adminLinkSide.style.display = 'block';
             adminLinkSide.style.visibility = 'visible';
             adminLinkSide.style.opacity = '1';
-            console.log('Admin link forced to be visible:', adminLinkSide);
+            adminLinkSide.style.color = 'white';
+            adminLinkSide.style.backgroundColor = 'rgba(255, 107, 53, 0.1)';
+            adminLinkSide.style.borderRadius = '4px';
+            adminLinkSide.style.margin = '2px 0';
+            adminLinkSide.style.padding = '0.75rem 0';
+            
+            // Force the parent list item to be visible too
+            const parentLi = adminLinkSide.parentElement;
+            if (parentLi) {
+                parentLi.style.display = 'list-item';
+                parentLi.style.visibility = 'visible';
+                parentLi.style.opacity = '1';
+            }
+            
+            console.log('Admin link forced to be visible with styling:', adminLinkSide);
         } else {
             console.error('Admin link side not found in DOM!');
         }
