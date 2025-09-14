@@ -100,10 +100,11 @@ class Logger {
         userId: req.session?.userId || 'anonymous'
       };
 
+      // Use console.log temporarily to avoid context issues
       if (res.statusCode >= 400) {
-        this.error('HTTP Error', logData);
+        console.error('[HTTP Error]', logData);
       } else {
-        this.info('HTTP Request', logData);
+        console.log('[HTTP Request]', logData);
       }
     });
 

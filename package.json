@@ -22,7 +22,10 @@
     "security:check": "npm audit",
     "health": "curl -f http://localhost:3000/health || exit 1",
     "prestart": "npm run security:check",
-    "postinstall": "npm run setup:env"
+    "postinstall": "npm run setup:env",
+    "admin:create": "node scripts/admin-manager.js create",
+    "admin:delete": "node scripts/admin-manager.js delete",
+    "admin:list": "node scripts/admin-manager.js list"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

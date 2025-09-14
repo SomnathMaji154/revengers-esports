@@ -3,25 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="About Revengers Esports - Premier football esports team history and philosophy.">
-    <meta name="keywords" content="revengers esports, football gaming, team history, esports philosophy">
+    <meta name="description" content="Learn about Revengers Esports - our mission, vision, and journey in football esports.">
+    <meta name="keywords" content="esports team, football gaming, revengers story, competitive gaming, about us">
     <meta name="author" content="Revengers Esports">
-    <meta property="og:title" content="About - Revengers Esports">
-    <meta property="og:description" content="Learn about the Revengers Esports team, our journey, and vision in football esports.">
+    <meta property="og:title" content="About Us - Revengers Esports">
+    <meta property="og:description" content="Learn about Revengers Esports - our mission, vision, and journey in football esports.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://revengers-esports.onrender.com/about.html">
     <meta property="og:image" content="/uploads/logo.webp">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="About - Revengers Esports">
-    <meta name="twitter:description" content="Learn about the Revengers Esports team, our journey, and vision in football esports.">
+    <meta name="twitter:title" content="About Us - Revengers Esports">
+    <meta name="twitter:description" content="Learn about Revengers Esports - our mission, vision, and journey in football esports.">
     <meta name="twitter:image" content="/uploads/logo.webp">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SportsTeam",
+      "name": "Revengers Esports",
+      "url": "https://revengers-esports.onrender.com/about.html",
+      "description": "Learn about Revengers Esports - our mission, vision, and journey in football esports.",
+      "sport": "Football Esports"
+    }
+    </script>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="/uploads/logo.webp" type="image/webp">
     <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <title>About - Revengers Esports</title>
+    <title>About Us - Revengers Esports</title>
 </head>
 <body>
+    <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
     <header class="site-header">
         <div class="container header-container">
             <button class="menu-toggle" id="menu-toggle" aria-label="Open navigation menu">
@@ -41,6 +65,7 @@
                 <li><a href="players.html" class="side-nav-link">Players</a></li>
                 <li><a href="managers.html" class="side-nav-link">Managers</a></li>
                 <li><a href="trophies.html" class="side-nav-link">Trophies</a></li>
+                <li><a href="about.html" class="side-nav-link">About</a></li>
                 <li><a href="contact.html" class="side-nav-link">Contact Us</a></li>
                 <li><a href="admin.html" class="side-nav-link" id="admin-link-side" style="display: none;">Admin</a></li>
             </ul>
@@ -51,70 +76,84 @@
         <section class="hero-section">
             <div class="container">
                 <h1 class="hero-title">About Revengers Esports</h1>
-                <p class="hero-subtitle">Pioneering the future of football esports with passion, strategy, and innovation.</p>
+                <p class="hero-subtitle">Dominating the football esports scene with passion, skill, and dedication.</p>
             </div>
         </section>
 
         <section class="content-section">
             <div class="container">
-                <div class="text-center mb-3xl">
-                    <h2>Our Story</h2>
-                    <p class="hero-subtitle">From humble beginnings to esports dominance, Revengers has redefined competitive football gaming.</p>
-                </div>
-                <p class="about-text">Founded in 2020, Revengers Esports started as a group of passionate gamers united by their love for football. What began as casual matches evolved into a professional team competing in global tournaments. Today, we are a leading force in football esports, known for our innovative strategies and unbeatable team spirit.</p>
-                <div class="text-center mt-xl">
-                    <a href="trophies.html" class="btn btn-primary">Our Achievements</a>
-                </div>
-            </div>
-        </section>
-
-        <section class="content-section">
-            <div class="container">
-                <div class="text-center mb-3xl">
-                    <h2>Our Philosophy</h2>
-                    <p class="hero-subtitle">Excellence through teamwork, innovation, and relentless pursuit of victory.</p>
-                </div>
                 <div class="content-grid">
                     <div class="content-card">
-                        <h3 class="card-title">Teamwork</h3>
-                        <p class="card-description">Every victory is a team effort. We foster collaboration and mutual support in every match and training session.</p>
+                        <div class="card-icon">🎮</div>
+                        <h2 class="card-title">Our Mission</h2>
+                        <p class="card-description">
+                            To establish ourselves as the premier football esports organization, pushing the boundaries of competitive gaming while fostering a community of passionate players and fans.
+                        </p>
                     </div>
-                    <div class="content-card">
-                        <h3 class="card-title">Innovation</h3>
-                        <p class="card-description">We push the boundaries of esports football with creative plays and cutting-edge training methods.</p>
-                    </div>
-                    <div class="content-card">
-                        <h3 class="card-title">Passion</h3>
-                        <p class="card-description">Our drive comes from a deep love for the game. We play with heart and compete with honor.</p>
-                    </div>
-                </div>
-            </div>
-        </section>
 
-        <section class="content-section">
-            <div class="container">
-                <div class="text-center mb-3xl">
-                    <h2>Our Leadership</h2>
-                    <p class="hero-subtitle">Meet the managers guiding our team to glory.</p>
-                </div>
-                <div class="card-grid" id="managers-about-grid">
-                    <!-- Dynamic managers loaded here -->
-                    <div class="loading-card">
-                        <p>Loading team...</p>
+                    <div class="content-card">
+                        <div class="card-icon">🏆</div>
+                        <h2 class="card-title">Our Vision</h2>
+                        <p class="card-description">
+                            To be recognized globally as the most innovative and successful football esports team, inspiring the next generation of competitive gamers and setting new standards in the industry.
+                        </p>
+                    </div>
+
+                    <div class="content-card">
+                        <div class="card-icon">⚽</div>
+                        <h2 class="card-title">Our Passion</h2>
+                        <p class="card-description">
+                            Football esports is more than just a game to us - it's our passion, our lifestyle, and our commitment to excellence. We live and breathe competitive gaming.
+                        </p>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <section class="content-section">
-            <div class="container">
-                <div class="text-center mb-3xl">
-                    <h2>Join the Revolution</h2>
-                    <p class="hero-subtitle">Be part of the Revengers family. Whether as a player, fan, or partner.</p>
+                <div class="story-section">
+                    <h2 class="section-title">Our Story</h2>
+                    <div class="story-content">
+                        <p>
+                            Founded with the vision of revolutionizing football esports, Revengers Esports began as a small group of passionate gamers who shared a common dream - to compete at the highest level and make their mark in the competitive gaming world.
+                        </p>
+                        <p>
+                            Through countless hours of practice, strategic planning, and unwavering dedication, we've grown from humble beginnings to become a formidable force in the football esports community. Our journey has been marked by significant victories, valuable lessons, and continuous growth.
+                        </p>
+                        <p>
+                            Today, Revengers Esports stands as a testament to what can be achieved through teamwork, perseverance, and a shared passion for excellence. We continue to push boundaries, set new standards, and inspire others to pursue their dreams in competitive gaming.
+                        </p>
+                    </div>
                 </div>
-                <div class="text-center">
-                    <a href="contact.html" class="btn btn-primary">Get Involved</a>
-                    <a href="players.html" class="btn btn-outline" style="margin-left: var(--spacing-md);">Join as Player</a>
+
+                <div class="values-section">
+                    <h2 class="section-title">Our Values</h2>
+                    <div class="values-grid">
+                        <div class="value-item">
+                            <h3>Excellence</h3>
+                            <p>We strive for perfection in everything we do, from gameplay to team management.</p>
+                        </div>
+                        <div class="value-item">
+                            <h3>Teamwork</h3>
+                            <p>Success comes through collaboration, communication, and mutual support.</p>
+                        </div>
+                        <div class="value-item">
+                            <h3>Innovation</h3>
+                            <p>We embrace new strategies, technologies, and approaches to stay ahead of the competition.</p>
+                        </div>
+                        <div class="value-item">
+                            <h3>Integrity</h3>
+                            <p>We compete with honor, respect our opponents, and maintain the highest ethical standards.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cta-section">
+                    <h2 class="section-title">Join Our Journey</h2>
+                    <p class="section-description">
+                        Ready to be part of something extraordinary? Whether you're a player, fan, or potential partner, we'd love to hear from you.
+                    </p>
+                    <div class="cta-buttons">
+                        <a href="contact.html" class="btn btn-primary">Get in Touch</a>
+                        <a href="players.html" class="btn btn-secondary">Meet Our Team</a>
+                    </div>
                 </div>
             </div>
         </section>
@@ -125,8 +164,9 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>Revengers Esports</h3>
-                    <p>Dominating the esports football world with skill and passion.</p>
+                    <p>Dominating the football esports community with skill, strategy, and passion.</p>
                 </div>
+                
                 <div class="footer-section">
                     <h3>Quick Links</h3>
                     <ul class="footer-links">
@@ -138,6 +178,7 @@
                         <li><a href="contact.html">Contact</a></li>
                     </ul>
                 </div>
+                
                 <div class="footer-section">
                     <h3>Follow us</h3>
                     <ul class="footer-links">
@@ -148,6 +189,7 @@
                     </ul>
                 </div>
             </div>
+            
             <div class="footer-bottom">
                 <p>&copy; Revengers Esports 2025</p>
                 <p><a href="#">Privacy Policy</a> • <a href="#">Terms of Service</a></p>
@@ -157,38 +199,39 @@
 
     <script src="script.js"></script>
     <script>
-        // Page-specific script for about
+        // Page-specific animations
         document.addEventListener('DOMContentLoaded', function() {
-            // Load managers for about page
-            async function loadAboutManagers() {
-                try {
-                    const managers = await fetchManagers(4); // Limit to 4
-                    displayManagers(managers, 'managers-about-grid', false); // Use the shared display function
-                } catch (error) {
-                    console.error('Error loading managers for about:', error);
-                    document.getElementById('managers-about-grid').innerHTML = '<p class="text-center">Team information unavailable.</p>';
-                }
-            }
-            loadAboutManagers();
-
             // Scroll animations
             const observerOptions = {
                 threshold: 0.1,
                 rootMargin: '0px 0px -50px 0px'
             };
+
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        entry.target.style.animationDelay = '0.1s';
-                        entry.target.style.animationPlayState = 'running';
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
                     }
                 });
             }, observerOptions);
-            document.querySelectorAll('.content-card').forEach(card => {
-                card.style.animation = 'fadeInUp 0.6s ease-out both';
-                card.style.animationPlayState = 'paused';
+
+            // Animate content cards
+            document.querySelectorAll('.content-card, .value-item').forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
                 observer.observe(card);
             });
+
+            // Animate story content
+            const storyContent = document.querySelector('.story-content');
+            if (storyContent) {
+                storyContent.style.opacity = '0';
+                storyContent.style.transform = 'translateY(30px)';
+                storyContent.style.transition = 'opacity 0.8s ease 0.3s, transform 0.8s ease 0.3s';
+                observer.observe(storyContent);
+            }
         });
     </script>
 </body>

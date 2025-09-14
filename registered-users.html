@@ -37,22 +37,29 @@
         }
     </script>
     <header class="site-header">
-        <div class="header-container">
+        <div class="container header-container">
+            <button class="menu-toggle" id="menu-toggle" aria-label="Open navigation menu">
+                &#9776;
+            </button>
             <div class="logo">
-                <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="header-logo">
+                <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="logo-img">
+                Revengers Esports
             </div>
-            <nav class="main-navigation">
-                <ul class="nav-menu">
-                    <li><a href="index.html" class="nav-link">Home</a></li>
-                    <li><a href="players.html" class="nav-link">Players</a></li>
-                    <li><a href="managers.html" class="nav-link">Managers</a></li>
-                    <li><a href="trophies.html" class="nav-link">Trophies</a></li>
-                    <li><a href="contact.html" class="nav-link">Contact Us</a></li>
-                    <li><a href="admin.html" class="nav-link">Admin</a></li>
-                </ul>
-            </nav>
         </div>
     </header>
+
+    <aside class="side-panel" id="side-panel">
+        <nav class="side-navigation">
+            <ul class="side-nav-menu">
+                <li><a href="index.html" class="side-nav-link">Home</a></li>
+                <li><a href="players.html" class="side-nav-link">Players</a></li>
+                <li><a href="managers.html" class="side-nav-link">Managers</a></li>
+                <li><a href="trophies.html" class="side-nav-link">Trophies</a></li>
+                <li><a href="contact.html" class="side-nav-link">Contact Us</a></li>
+                <li><a href="admin.html" class="side-nav-link" id="admin-link-side" style="display: none;">Admin</a></li>
+            </ul>
+        </nav>
+    </aside>
 
     <main class="main-content">
         <section class="content-section">
@@ -87,7 +94,7 @@
     </main>
 
     <footer class="site-footer">
-        <div class="footer-container">
+        <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
                     <h3>Revengers Esports</h3>
@@ -101,23 +108,25 @@
                         <li><a href="players.html">Players</a></li>
                         <li><a href="managers.html">Managers</a></li>
                         <li><a href="trophies.html">Trophies</a></li>
-                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="about.html">About</a></li>
+                        <li><a href="contact.html">Contact</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
-                    <h3>Connect With Us</h3>
+                    <h3>Follow us</h3>
                     <ul class="footer-links">
-                        <li><a href="#">Discord</a></li>
-                        <li><a href="#">Twitter</a></li>
                         <li><a href="#">Instagram</a></li>
+                        <li><a href="#">Twitter</a></li>
                         <li><a href="#">YouTube</a></li>
+                        <li><a href="#">Discord</a></li>
                     </ul>
                 </div>
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
+                <p>&copy; Revengers Esports 2025</p>
+                <p><a href="#">Privacy Policy</a> • <a href="#">Terms of Service</a></p>
             </div>
         </div>
     </footer>

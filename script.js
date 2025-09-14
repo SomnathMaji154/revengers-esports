@@ -1,6 +1,50 @@
 // Enhanced frontend JavaScript with better error handling and performance optimizations
 document.addEventListener('DOMContentLoaded', function() {
 
+    // Enhanced alert system
+    function showAlert(message, type = 'info') {
+        // Remove existing alerts
+        const existingAlerts = document.querySelectorAll('.custom-alert');
+        existingAlerts.forEach(alert => alert.remove());
+
+        // Create alert element
+        const alert = document.createElement('div');
+        alert.className = `custom-alert alert-${type}`;
+        alert.innerHTML = `
+            <div class="alert-content">
+                <span class="alert-icon">${getAlertIcon(type)}</span>
+                <span class="alert-message">${message}</span>
+                <button class="alert-close" onclick="this.parentElement.parentElement.remove()">&times;</button>
+            </div>
+        `;
+
+        // Add to page
+        document.body.appendChild(alert);
+
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, 5000);
+
+        // Add animation
+        setTimeout(() => alert.classList.add('show'), 100);
+    }
+
+    function getAlertIcon(type) {
+        const icons = {
+            success: '✓',
+            error: '✗',
+            warning: '⚠',
+            info: 'ℹ'
+        };
+        return icons[type] || icons.info;
+    }
+
+    // Make showAlert available globally
+    window.showAlert = showAlert;
+
     // Side panel functionality
     const menuToggle = document.getElementById('menu-toggle');
     const sidePanel = document.getElementById('side-panel');
