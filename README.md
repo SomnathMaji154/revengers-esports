@@ -25,7 +25,6 @@ This project is a complete redesign and enhancement of the Revengers Esports web
 - **SEO Enhancements**: Added meta tags for better search engine optimization
 - **Social Media Integration**: Open Graph and Twitter Card meta tags for better social sharing
 - **Performance Optimizations**: Gzip/Brotli compression and other performance enhancements
-- **Security Improvements**: Helmet.js for security headers and secure session management
 
 ### User Experience
 - **Improved Navigation**: Enhanced navigation with hover effects and active states
@@ -68,27 +67,8 @@ This project is a complete redesign and enhancement of the Revengers Esports web
 ### Installation
 1. Clone the repository
 2. Install dependencies: `npm install`
-3. Set up environment variables in `.env` file
+3. Set up environment variables
 4. Start the development server: `npm run dev`
-
-### Environment Variables
-Create a `.env` file with the following variables:
-```
-DATABASE_URL=your_database_url_here
-SESSION_SECRET=your_session_secret_here
-CLOUDINARY_CLOUD_NAME=your_cloud_name_here
-CLOUDINARY_API_KEY=your_api_key_here
-CLOUDINARY_API_SECRET=your_api_secret_here
-NODE_ENV=development
-PORT=3000
-```
-
-## Deployment
-The application is configured for deployment on Render with:
-- Health check endpoint at `/health`
-- PostgreSQL session store
-- Cloudinary image storage
-- Gzip/Brotli compression
 
 ## Technologies Used
 - **Frontend**: HTML5, CSS3, JavaScript
@@ -96,26 +76,8 @@ The application is configured for deployment on Render with:
 - **Database**: PostgreSQL
 - **Authentication**: Express-session, bcryptjs
 - **Image Processing**: Cloudinary, Sharp
-- **Security**: Helmet.js, CORS
 - **Logging**: Morgan
 - **Compression**: Compression middleware
-
-## Improvements Made
-1. **Enhanced CSS Design**: Completely redesigned the CSS with modern effects, improved animations, and responsive design
-2. **SEO Optimization**: Added comprehensive meta tags for better search engine visibility
-3. **Social Media Integration**: Implemented Open Graph and Twitter Card meta tags for better sharing
-4. **Performance Enhancements**: Added compression middleware, service worker for caching, and optimized asset loading
-5. **Security Improvements**: Implemented Helmet.js for security headers, enhanced authentication middleware, and input validation
-6. **Responsive Design**: Improved responsiveness across all device sizes
-7. **User Experience**: Enhanced forms, navigation, and overall user interface
-8. **Progressive Web App**: Added service worker and manifest for PWA functionality
-9. **Input Validation**: Added comprehensive input validation and sanitization for all forms
-10. **Rate Limiting**: Implemented API rate limiting for better security and performance
-11. **Error Handling**: Improved error handling and user feedback throughout the application
-12. **Modern Color Scheme**: Implemented a vibrant, professional color palette with indigo, emerald, and amber accents
-13. **Enhanced UI Components**: Redesigned cards, buttons, and form elements with modern styling
-14. **Improved Typography**: Better font pairings with Poppins for headings and Inter for body text
-15. **Visual Enhancements**: Added gradients, shadows, and subtle animations for a more engaging experience
 
 ## License
 This project is proprietary to Revengers Esports.

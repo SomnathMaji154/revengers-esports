@@ -1,6 +1,6 @@
 const express = require('express');
-const db = require('./db'); // Import the database connection
-const { isAuthenticated } = require('./auth'); // Import isAuthenticated middleware
+const db = require('./db');
+const { isAuthenticated } = require('./auth');
 
 const router = express.Router();
 
@@ -56,14 +56,14 @@ router.post('/', validateContactData, (req, res) => {
   });
 });
 
-// GET /api/registered-users - View registered users (protected route)
+// GET /api/registered-users - View registered users with better error handling
 router.get('/', isAuthenticated, (req, res) => {
   db.all("SELECT name, email, whatsapp FROM contact_submissions ORDER BY submission_date DESC", [], (err, rows) => {
     if (err) {
-      res.status(500).json({ error: err.message });
-      return console.error(err.message);
+      console.error('Database error fetching contact submissions:', err);
+      return res.status(500).json({ error: 'Failed to fetch registered users. Please try again later.' });
     }
-    res.json(rows);
+    res.json(rows || []);
   });
 });
 

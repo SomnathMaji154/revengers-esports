@@ -1,85 +1,23 @@
 const express = require('express');
 const path = require('path');
 const sharp = require('sharp');
-const multer = require('multer');
-const db = require('./db'); // Import the database connection
-const { isAuthenticated } = require('./auth'); // Import isAuthenticated middleware
-const { uploader } = require('./cloudinaryConfig'); // Import Cloudinary uploader
+const db = require('./db');
+const { isAuthenticated } = require('./auth');
+const { configureMulter, uploadImageToCloudinary, deleteImageFromCloudinary } = require('./utils');
 
 const router = express.Router();
 
 // Configure multer for memory storage
-const upload = multer({ 
-  storage: multer.memoryStorage(), // Store files in memory as buffers
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'), false);
-    }
-  }
-});
+const upload = configureMulter();
 
-// Helper function to upload image to Cloudinary
-async function uploadImageToCloudinary(fileBuffer, originalFilename, folder) {
-  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-  const publicId = `${folder}/processed-${uniqueSuffix}`;
-
-  const uploadOptions = {
-    public_id: publicId,
-    format: 'webp',
-    quality: 'auto',
-    resource_type: 'image'
-  };
-
-  return new Promise((resolve, reject) => {
-    const uploadStream = uploader.upload_stream(uploadOptions, (error, result) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(result.secure_url);
-      }
-    });
-    uploadStream.end(fileBuffer);
-  });
-}
-
-// Helper function to delete image from Cloudinary
-async function deleteImageFromCloudinary(imageUrl) {
-  if (!imageUrl) return;
-
-  try {
-    const urlParts = new URL(imageUrl).pathname.split('/');
-    const filename = urlParts.pop().split('.')[0]; // e.g., 'processed-123'
-    const folder = urlParts.pop(); // 'players'
-    const publicId = `${folder}/${filename}`;
-
-    await new Promise((resolve, reject) => {
-      uploader.destroy(publicId, (error, result) => {
-        if (error) {
-          reject(error);
-        } else {
-          console.log(`Deleted ${publicId} from Cloudinary.`);
-          resolve(result);
-        }
-      });
-    });
-  } catch (error) {
-    console.error('Error deleting image from Cloudinary:', error);
-  }
-}
-
-// GET /api/players - Fetch all players (limited for performance)
+// GET /api/players - Fetch all players with better error handling
 router.get('/', (req, res) => {
   db.all("SELECT id, name, jerseyNumber, imageUrl AS \"imageUrl\", stars, joined_date FROM players ORDER BY joined_date DESC LIMIT 20", [], (err, rows) => {
     if (err) {
-      res.status(500).json({ error: err.message });
-      return console.error(err.message);
+      console.error('Database error fetching players:', err);
+      return res.status(500).json({ error: 'Failed to fetch players. Please try again later.' });
     }
-    res.json(rows);
+    res.json(rows || []);
   });
 });
 
@@ -92,11 +30,11 @@ function validatePlayerData(req, res, next) {
     return res.status(400).json({ error: 'Name, jersey number, and stars are required' });
   }
   
-  // Validate jersey number (1-9)
+  // Validate jersey number (1-99)
   const jerseyNum = parseInt(jerseyNumber);
   if (isNaN(jerseyNum) || jerseyNum < 1 || jerseyNum > 99) {
     return res.status(400).json({ error: 'Jersey number must be between 1 and 99' });
-  }
+ }
   
   // Validate stars (1-5)
   const starRating = parseInt(stars);
@@ -104,10 +42,13 @@ function validatePlayerData(req, res, next) {
     return res.status(400).json({ error: 'Stars rating must be between 1 and 5' });
   }
   
-  // Sanitize name (remove any HTML tags)
+  // Sanitize name (remove any HTML tags and limit length)
   const sanitized_name = name.replace(/<[^>]*>/g, '').trim();
   if (sanitized_name.length === 0) {
     return res.status(400).json({ error: 'Name cannot be empty' });
+  }
+  if (sanitized_name.length > 100) {
+    return res.status(400).json({ error: 'Name must be less than 100 characters' });
   }
   
   req.body.name = sanitized_name;
@@ -117,8 +58,8 @@ function validatePlayerData(req, res, next) {
   next();
 }
 
-// POST /api/players - Add new player (handles both join page and admin)
-router.post('/', isAuthenticated, validatePlayerData, upload.single('image'), async (req, res) => { // Protected route
+// POST /api/players - Add new player
+router.post('/', isAuthenticated, validatePlayerData, upload.single('image'), async (req, res) => {
   const { name, jerseyNumber, stars } = req.body;
   let imageUrl = null;
 
@@ -128,14 +69,14 @@ router.post('/', isAuthenticated, validatePlayerData, upload.single('image'), as
       return res.status(400).json({ error: 'Only image files are allowed' });
     }
     
-    // Validate file size (5MB limit)
+    // Validate file size
     if (req.file.size > 5 * 1024 * 1024) {
       return res.status(400).json({ error: 'File size must be less than 5MB' });
     }
     
     try {
       const processedImageBuffer = await sharp(req.file.buffer)
-        .resize(300, 400, { // Standard size for player cards
+        .resize(300, 400, {
           fit: sharp.fit.cover,
           position: sharp.strategy.entropy
         })
@@ -177,7 +118,7 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
       });
 
       if (oldPlayer && oldPlayer.imageUrl) {
-        await deleteImageFromCloudinary(oldPlayer.imageUrl);
+        await deleteImageFromCloudinary(oldPlayer.imageUrl, 'players');
       }
 
       const processedImageBuffer = await sharp(req.file.buffer)
@@ -212,8 +153,8 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
   });
 });
 
-// DELETE /api/players/:id - Delete any player (admin)
-router.delete('/:id', isAuthenticated, async (req, res) => { // Protected route
+// DELETE /api/players/:id - Delete any player
+router.delete('/:id', isAuthenticated, async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -226,7 +167,7 @@ router.delete('/:id', isAuthenticated, async (req, res) => { // Protected route
     });
 
     if (player && player.imageUrl) {
-      await deleteImageFromCloudinary(player.imageUrl);
+      await deleteImageFromCloudinary(player.imageUrl, 'players');
     }
 
     db.run("DELETE FROM players WHERE id = $1", [id], function(err) {

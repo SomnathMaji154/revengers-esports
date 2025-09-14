@@ -1,85 +1,23 @@
 const express = require('express');
 const path = require('path');
 const sharp = require('sharp');
-const multer = require('multer');
-const db = require('./db'); // Import the database connection
-const { isAuthenticated } = require('./auth'); // Import isAuthenticated middleware
-const { uploader } = require('./cloudinaryConfig'); // Import Cloudinary uploader
+const db = require('./db');
+const { isAuthenticated } = require('./auth');
+const { configureMulter, uploadImageToCloudinary, deleteImageFromCloudinary } = require('./utils');
 
 const router = express.Router();
 
 // Configure multer for memory storage
-const upload = multer({ 
-  storage: multer.memoryStorage(), // Store files in memory as buffers
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'), false);
-    }
-  }
-});
+const upload = configureMulter();
 
-// Helper function to upload image to Cloudinary
-async function uploadImageToCloudinary(fileBuffer, originalFilename, folder) {
-  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-  const publicId = `${folder}/processed-${uniqueSuffix}`;
-
-  const uploadOptions = {
-    public_id: publicId,
-    format: 'webp',
-    quality: 'auto',
-    resource_type: 'image'
-  };
-
-  return new Promise((resolve, reject) => {
-    const uploadStream = uploader.upload_stream(uploadOptions, (error, result) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(result.secure_url);
-      }
-    });
-    uploadStream.end(fileBuffer);
-  });
-}
-
-// Helper function to delete image from Cloudinary
-async function deleteImageFromCloudinary(imageUrl) {
-  if (!imageUrl) return;
-
-  try {
-    const urlParts = new URL(imageUrl).pathname.split('/');
-    const filename = urlParts.pop().split('.')[0]; // e.g., 'processed-123'
-    const folder = urlParts.pop(); // 'trophies'
-    const publicId = `${folder}/${filename}`;
-
-    await new Promise((resolve, reject) => {
-      uploader.destroy(publicId, (error, result) => {
-        if (error) {
-          reject(error);
-        } else {
-          console.log(`Deleted ${publicId} from Cloudinary.`);
-          resolve(result);
-        }
-      });
-    });
-  } catch (error) {
-    console.error('Error deleting image from Cloudinary:', error);
-  }
-}
-
-// GET /api/trophies - Fetch all trophies (limited for performance)
+// GET /api/trophies - Fetch all trophies with better error handling
 router.get('/', (req, res) => {
   db.all("SELECT id, name, year, imageUrl AS \"imageUrl\" FROM trophies ORDER BY year DESC LIMIT 20", [], (err, rows) => {
     if (err) {
-      res.status(500).json({ error: err.message });
-      return console.error(err.message);
+      console.error('Database error fetching trophies:', err);
+      return res.status(500).json({ error: 'Failed to fetch trophies. Please try again later.' });
     }
-    res.json(rows);
+    res.json(rows || []);
   });
 });
 
@@ -110,7 +48,7 @@ function validateTrophyData(req, res, next) {
   next();
 }
 
-// POST /api/trophies - Add new trophy (protected route)
+// POST /api/trophies - Add new trophy
 router.post('/', isAuthenticated, validateTrophyData, upload.single('image'), async (req, res) => {
   const { name, year } = req.body;
   let imageUrl = null;
@@ -121,14 +59,14 @@ router.post('/', isAuthenticated, validateTrophyData, upload.single('image'), as
       return res.status(400).json({ error: 'Only image files are allowed' });
     }
     
-    // Validate file size (5MB limit)
+    // Validate file size
     if (req.file.size > 5 * 1024 * 1024) {
       return res.status(400).json({ error: 'File size must be less than 5MB' });
     }
     
     try {
       const processedImageBuffer = await sharp(req.file.buffer)
-        .resize(400, 300, { // Standard size for trophies (landscape)
+        .resize(400, 300, {
           fit: sharp.fit.cover,
           position: sharp.strategy.entropy
         })
@@ -154,7 +92,7 @@ router.post('/', isAuthenticated, validateTrophyData, upload.single('image'), as
   });
 });
 
-// PUT /api/trophies/:id/image - Update trophy image (protected route)
+// PUT /api/trophies/:id/image - Update trophy image
 router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, res) => {
   const { id } = req.params;
   let imageUrl = null;
@@ -170,7 +108,7 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
       });
 
       if (oldTrophy && oldTrophy.imageUrl) {
-        await deleteImageFromCloudinary(oldTrophy.imageUrl);
+        await deleteImageFromCloudinary(oldTrophy.imageUrl, 'trophies');
       }
 
       const processedImageBuffer = await sharp(req.file.buffer)
@@ -205,7 +143,7 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
   });
 });
 
-// DELETE /api/trophies/:id - Delete trophy (protected route)
+// DELETE /api/trophies/:id - Delete trophy
 router.delete('/:id', isAuthenticated, async (req, res) => {
   const { id } = req.params;
 
@@ -219,7 +157,7 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
     });
 
     if (trophy && trophy.imageUrl) {
-      await deleteImageFromCloudinary(trophy.imageUrl);
+      await deleteImageFromCloudinary(trophy.imageUrl, 'trophies');
     }
 
     db.run("DELETE FROM trophies WHERE id = $1", [id], function(err) {

@@ -1,14 +1,23 @@
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
-});
+// Database configuration with fallbacks
+const dbConfig = {
+  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/revengers_esports',
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+  connectionTimeoutMillis: 500,
+  idleTimeoutMillis: 30000,
+  max: 10
+};
 
-pool.connect((err) => {
+const pool = new Pool(dbConfig);
+
+// Test database connection
+pool.query('SELECT NOW()', (err, res) => {
   if (err) {
-    console.error('Error connecting to PostgreSQL:', err.message);
+    console.warn('Warning: Could not connect to PostgreSQL database. Running in mock mode.');
+    console.warn('For full functionality, please configure DATABASE_URL environment variable.');
+    // Database operations will be mocked
   } else {
     console.log('Connected to PostgreSQL database.');
     initializeDatabase();
@@ -92,18 +101,19 @@ async function initializeDatabase() {
 
   console.log('Database indexes created successfully');
 
-  // Create default admin if not exists
-  const defaultAdmin = { username: 'admin', password: 'adminpassword' };
-  try {
-    const res = await pool.query('SELECT * FROM admins WHERE username = $1', [defaultAdmin.username]);
-    if (res.rows.length === 0) {
-      const hash = await bcrypt.hash(defaultAdmin.password, 10);
-      await pool.query('INSERT INTO admins (username, password) VALUES ($1, $2)', [defaultAdmin.username, hash]);
-      console.log('Default admin created: username=admin, password=adminpassword');
+  // Create default admin if not exists (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    const defaultAdmin = { username: 'admin', password: process.env.DEFAULT_ADMIN_PASSWORD || 'adminpassword' };
+    try {
+      const res = await pool.query('SELECT * FROM admins WHERE username = $1', [defaultAdmin.username]);
+      if (res.rows.length === 0) {
+        const hash = await bcrypt.hash(defaultAdmin.password, 10);
+        await pool.query('INSERT INTO admins (username, password) VALUES ($1, $2)', [defaultAdmin.username, hash]);
+      }
+    } catch (err) {
+      console.error('Error creating default admin:', err.message);
     }
-  } catch (err) {
-    console.error('Error creating default admin:', err.message);
-  }
+ }
 
   console.log('Database initialized. Tables ready.');
 }

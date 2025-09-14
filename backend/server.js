@@ -7,16 +7,14 @@ const morgan = require('morgan');
 const compression = require('compression');
 const cors = require('cors');
 
-// No Firebase config needed
-
 // Import modularized components
-const { pool } = require('./db'); // Get pool for session store
-const db = require('./db'); // Database connection and initialization
-const { router: authRoutes, isAuthenticated } = require('./auth'); // Auth routes and middleware
-const playerRoutes = require('./playerRoutes'); // Player API routes
-const managerRoutes = require('./managerRoutes'); // Manager API routes
-const trophyRoutes = require('./trophyRoutes'); // Trophy API routes
-const contactRoutes = require('./contactRoutes'); // Contact API routes
+const { pool } = require('./db');
+const db = require('./db');
+const { router: authRoutes, isAuthenticated } = require('./auth');
+const playerRoutes = require('./playerRoutes');
+const managerRoutes = require('./managerRoutes');
+const trophyRoutes = require('./trophyRoutes');
+const contactRoutes = require('./contactRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -26,7 +24,7 @@ const NODE_ENV = process.env.NODE_ENV || 'development';
 app.set('trust proxy', 1);
 
 // Middleware
-app.use(compression()); // Gzip/Brotli compression
+app.use(compression());
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -41,10 +39,10 @@ app.use(helmet({
       frameSrc: ["'none'"],
     },
   },
-})); // Security headers
-app.use(morgan('tiny')); // HTTP request logging
+}));
+app.use(morgan('tiny'));
 
-// Configure CORS for production
+// Configure CORS
 const corsOptions = {
   origin: NODE_ENV === 'production' ? 'https://revengers-esports.onrender.com' : '*',
   credentials: true,
@@ -55,19 +53,19 @@ const rateLimit = require('express-rate-limit');
 
 // General API rate limiter
 const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: {
     error: 'Too many requests from this IP, please try again later.'
   },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false // Disable the `X-RateLimit-*` headers
+  standardHeaders: true,
+ legacyHeaders: false
 });
 
 // Strict rate limiter for authentication endpoints
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 5,
   message: {
     error: 'Too many authentication attempts, please try again later.'
   },
@@ -78,27 +76,37 @@ const authLimiter = rateLimit({
 app.use('/api/', generalLimiter);
 app.use('/api/admin/login', authLimiter);
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
-// Session middleware with PostgreSQL store
-const pgSession = connectPgSimple(session);
-
-app.use(session({
-  store: new pgSession({
-    pool: pool,
-    tableName: 'sessions',
-    createTableIfMissing: true
-  }),
-  secret: process.env.SESSION_SECRET || 'super_secret_dev_key',
+// Session middleware with PostgreSQL store - with fallback
+let sessionConfig = {
+  secret: process.env.SESSION_SECRET || 'super_secret_dev_key_change_in_production',
   resave: false,
   saveUninitialized: false,
   cookie: { 
     secure: NODE_ENV === 'production',
     httpOnly: true,
-    sameSite: NODE_ENV === 'production' ? 'none' : 'lax',
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
-  }
-}));
+    sameSite: NODE_ENV === 'production' ? 'strict' : 'lax',
+    maxAge: 24 * 60 * 60 * 1000,
+    path: '/'
+  },
+  name: 'revengers.sid',
+  rolling: true
+};
+
+// Try to use PostgreSQL session store, fallback to memory store if DB unavailable
+try {
+  const pgSession = connectPgSimple(session);
+  sessionConfig.store = new pgSession({
+    pool: pool,
+    tableName: 'sessions',
+    createTableIfMissing: true
+  });
+} catch (err) {
+  console.warn('Warning: Could not initialize PostgreSQL session store. Using memory store.');
+}
+
+app.use(session(sessionConfig));
 
 // Serve static frontend files from root and public directories
 app.use(express.static(path.join(__dirname, '../')));
@@ -106,14 +114,14 @@ app.use(express.static(path.join(__dirname, '../public')));
 
 
 // API Routes
-app.use('/api', authRoutes); // Authentication routes
-app.use('/api/players', playerRoutes); // Player routes
-app.use('/api/managers', managerRoutes); // Manager routes
-app.use('/api/trophies', trophyRoutes); // Trophy routes
-app.use('/api/contact', contactRoutes); // Contact routes (for submission)
-app.use('/api/registered-users', contactRoutes); // Contact routes (for viewing registered users)
+app.use('/api', authRoutes);
+app.use('/api/players', playerRoutes);
+app.use('/api/managers', managerRoutes);
+app.use('/api/trophies', trophyRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/registered-users', contactRoutes);
 
-// Health check route for Render (prevents cold starts on free tier)
+// Health check route for Render
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -127,6 +135,21 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT} in ${NODE_ENV} mode`);
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM received, shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated');
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT received, shutting down gracefully');
+  server.close(() => {
+    console.log('Process terminated');
+  });
 });

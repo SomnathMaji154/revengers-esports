@@ -5,7 +5,11 @@
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js"
+    "dev": "nodemon backend/server.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "echo \"No linter configured\" && exit 0",
+    "build": "echo \"No build step required\" && exit 0",
+    "deploy": "echo \"Ready for deployment\" && exit 0"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -20,12 +24,30 @@
     "morgan": "^1.10.1",
     "multer": "^1.4.5-lts.1",
     "pg": "^8.16.3",
-    "sharp": "^0.33.4"
+    "sharp": "^0.3.4"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SomnathMaji154/revengers-esports.git"
+  },
+  "keywords": [
+    "esports",
+    "football",
+    "gaming",
+    "website",
+    "nodejs",
+    "express"
+  ],
+  "author": "Revengers Esports Team",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SomnathMaji154/revengers-esports/issues"
+  },
+  "homepage": "https://github.com/SomnathMaji154/revengers-esports#readme"
 }

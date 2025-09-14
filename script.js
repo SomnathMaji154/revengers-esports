@@ -1,5 +1,6 @@
+// Enhanced frontend JavaScript with better error handling and performance optimizations
 document.addEventListener('DOMContentLoaded', function() {
-    // Dark mode toggle functionality
+    // Dark mode toggle functionality with better persistence
     const darkToggle = document.getElementById('dark-toggle');
     if (darkToggle) {
         const body = document.body;
@@ -16,6 +17,34 @@ document.addEventListener('DOMContentLoaded', function() {
             darkToggle.textContent = isNowDark ? '☀️' : '🌙';
             localStorage.setItem('darkMode', isNowDark ? 'enabled' : 'disabled');
         });
+    }
+
+    // Enhanced loading overlay with better UX
+    function showLoading(message = 'Loading...') {
+        let overlay = document.getElementById('loading-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.id = 'loading-overlay';
+            overlay.className = 'loading-overlay';
+            overlay.innerHTML = `
+                <div class="loading-content">
+                    <div class="loading-spinner large"></div>
+                    <p>${message}</p>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+        }
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden'; // Prevent scrolling
+    }
+
+    // Hide loading overlay
+    function hideLoading() {
+        const overlay = document.getElementById('loading-overlay');
+        if (overlay) {
+            overlay.classList.remove('active');
+        }
+        document.body.style.overflow = ''; // Restore scrolling
     }
 
     // Handle contact form submission with enhanced validation and feedback
@@ -53,6 +82,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const originalText = submitButton.textContent;
             submitButton.textContent = 'Submitting...';
             submitButton.disabled = true;
+            showLoading('Submitting your message...');
 
             try {
                 const response = await fetch('/api/contact', {
@@ -60,7 +90,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ name, email, whatsapp })
+                    body: JSON.stringify({ name, email, whatsapp }),
+                    timeout: 10000 // 10 second timeout
                 });
 
                 if (!response.ok) {
@@ -73,11 +104,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 contactForm.reset();
             } catch (error) {
                 console.error('Error submitting contact form:', error);
-                showAlert('Error submitting contact form: ' + error.message, 'error');
+                if (error.name === 'AbortError' || error.name === 'TypeError') {
+                    showAlert('Network error. Please check your connection and try again.', 'error');
+                } else {
+                    showAlert('Error submitting contact form: ' + error.message, 'error');
+                }
             } finally {
                 // Re-enable submit button
                 submitButton.textContent = originalText;
                 submitButton.disabled = false;
+                hideLoading();
             }
         });
     }
@@ -90,9 +126,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function checkAdminStatus() {
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+            
             const response = await fetch('/api/admin/status', {
-                credentials: 'include'
+                credentials: 'include',
+                signal: controller.signal
             });
+            
+            clearTimeout(timeoutId);
+            
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -100,21 +143,33 @@ document.addEventListener('DOMContentLoaded', function() {
             return data.loggedIn;
         } catch (error) {
             console.error('Error checking admin status:', error);
+            if (error.name === 'AbortError') {
+                showAlert('Request timeout. Please try again.', 'error');
+            }
             return false;
         }
     }
 
     async function fetchRegisteredUsers() {
+        showLoading('Loading registered users...');
         const isLoggedIn = await checkAdminStatus();
         if (!isLoggedIn) {
+            hideLoading();
             showAlert('You must be logged in to view registered users.', 'error');
             userDataBody.innerHTML = '<tr><td colspan="3">You must be logged in to view registered users.</td></tr>';
             return;
         }
         try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+            
             const response = await fetch('/api/registered-users', {
-                credentials: 'include'
+                credentials: 'include',
+                signal: controller.signal
             });
+            
+            clearTimeout(timeoutId);
+            
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
                 throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
@@ -123,8 +178,14 @@ document.addEventListener('DOMContentLoaded', function() {
             displayRegisteredUsers(users);
         } catch (error) {
             console.error('Error fetching registered users:', error);
-            showAlert('Error loading registered users: ' + error.message, 'error');
+            if (error.name === 'AbortError') {
+                showAlert('Request timeout. Please try again.', 'error');
+            } else {
+                showAlert('Error loading registered users: ' + error.message, 'error');
+            }
             userDataBody.innerHTML = '<tr><td colspan="3">Error loading registered users.</td></tr>';
+        } finally {
+            hideLoading();
         }
     }
 
@@ -142,7 +203,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Enhanced alert function
+    // Enhanced alert function with better styling and accessibility
     function showAlert(message, type) {
         // Remove any existing alerts
         const existingAlert = document.querySelector('.custom-alert');
@@ -154,6 +215,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const alert = document.createElement('div');
         alert.className = `alert alert-${type} custom-alert`;
         alert.setAttribute('role', 'alert');
+        alert.setAttribute('aria-live', 'polite');
         alert.textContent = message;
 
         // Add close button
@@ -163,8 +225,15 @@ document.addEventListener('DOMContentLoaded', function() {
         closeBtn.style.cursor = 'pointer';
         closeBtn.style.fontSize = '1.5em';
         closeBtn.style.lineHeight = '0.5';
+        closeBtn.style.fontWeight = 'bold';
         closeBtn.setAttribute('aria-label', 'Close alert');
+        closeBtn.setAttribute('tabindex', '0');
         closeBtn.onclick = () => alert.remove();
+        closeBtn.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                alert.remove();
+            }
+        });
         alert.appendChild(closeBtn);
 
         // Add to page
@@ -177,5 +246,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert.remove();
             }
         }, 5000);
+
+        // Focus the alert for accessibility
+        alert.focus();
     }
 });

@@ -1,14 +1,20 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const db = require('./db'); // Import the database connection
+const db = require('./db');
 
 const router = express.Router();
 
-// Authentication middleware with enhanced security
+// Authentication middleware with better error handling
 function isAuthenticated(req, res, next) {
-  // Check if session exists and user is authenticated
+  // Check if session store is available
+  if (!req.session) {
+    return res.status(503).json({ 
+      message: 'Service temporarily unavailable',
+      code: 'SERVICE_UNAVAILABLE'
+    });
+  }
+  
   if (req.session && req.session.isAdmin) {
-    // Add security headers to prevent caching of sensitive content
     res.set({
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',
@@ -16,42 +22,69 @@ function isAuthenticated(req, res, next) {
     });
     next();
   } else {
-    // Clear any existing session data
     if (req.session) {
-      req.session.destroy(() => {});
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Session destruction error:', err);
+        }
+      });
     }
-    res.status(401).json({ message: 'Unauthorized: Invalid or expired session' });
+    res.status(401).json({ 
+      message: 'Unauthorized: Invalid or expired session',
+      code: 'SESSION_EXPIRED'
+    });
   }
 }
 
-// Admin Login
+// Admin Login with better error handling
 router.post('/admin/login', (req, res) => {
   const { username, password } = req.body;
+  
+  // Validate input
+  if (!username || !password) {
+    return res.status(400).json({ message: 'Username and password are required' });
+  }
+  
   db.get('SELECT * FROM admins WHERE username = $1', [username], async (err, admin) => {
     if (err) {
-      res.status(500).json({ error: err.message });
-      return;
+      console.error('Database error during login:', err);
+      return res.status(500).json({ error: 'Authentication service temporarily unavailable' });
     }
     if (!admin) {
-      res.status(400).json({ message: 'Invalid credentials' });
-      return;
+      // Add delay to prevent timing attacks
+      await new Promise(resolve => setTimeout(resolve, 100));
+      return res.status(400).json({ message: 'Invalid credentials' });
     }
-    const match = await bcrypt.compare(password, admin.password);
-    if (match) {
-      req.session.isAdmin = true;
-      res.json({ message: 'Logged in successfully' });
-    } else {
-      res.status(400).json({ message: 'Invalid credentials' });
+    try {
+      const match = await bcrypt.compare(password, admin.password);
+      if (match) {
+        // Ensure session exists before setting properties
+        if (req.session) {
+          req.session.isAdmin = true;
+          res.json({ message: 'Logged in successfully' });
+        } else {
+          res.status(503).json({ error: 'Session service unavailable' });
+        }
+      } else {
+        res.status(400).json({ message: 'Invalid credentials' });
+      }
+    } catch (bcryptErr) {
+      console.error('Bcrypt error:', bcryptErr);
+      res.status(500).json({ error: 'Authentication service error' });
     }
-  });
+ });
 });
 
 // Admin Logout
 router.post('/admin/logout', (req, res) => {
+  if (!req.session) {
+    return res.status(503).json({ error: 'Session service unavailable' });
+  }
+  
   req.session.destroy(err => {
     if (err) {
-      res.status(500).json({ error: 'Could not log out' });
-      return;
+      console.error('Logout error:', err);
+      return res.status(500).json({ error: 'Could not log out' });
     }
     res.json({ message: 'Logged out successfully' });
   });
@@ -59,7 +92,7 @@ router.post('/admin/logout', (req, res) => {
 
 // Admin Status (check if logged in)
 router.get('/admin/status', (req, res) => {
-  res.json({ loggedIn: req.session.isAdmin || false });
+  res.json({ loggedIn: (req.session && req.session.isAdmin) || false });
 });
 
 module.exports = { router, isAuthenticated };

@@ -1,85 +1,23 @@
 const express = require('express');
 const path = require('path');
 const sharp = require('sharp');
-const multer = require('multer');
-const db = require('./db'); // Import the database connection
-const { isAuthenticated } = require('./auth'); // Import isAuthenticated middleware
-const { uploader } = require('./cloudinaryConfig'); // Import Cloudinary uploader
+const db = require('./db');
+const { isAuthenticated } = require('./auth');
+const { configureMulter, uploadImageToCloudinary, deleteImageFromCloudinary } = require('./utils');
 
 const router = express.Router();
 
 // Configure multer for memory storage
-const upload = multer({ 
-  storage: multer.memoryStorage(), // Store files in memory as buffers
-  limits: {
-    fileSize: 5 * 1024 * 1024 // 5MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype.startsWith('image/')) {
-      cb(null, true);
-    } else {
-      cb(new Error('Only image files are allowed!'), false);
-    }
-  }
-});
+const upload = configureMulter();
 
-// Helper function to upload image to Cloudinary
-async function uploadImageToCloudinary(fileBuffer, originalFilename, folder) {
-  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-  const publicId = `${folder}/processed-${uniqueSuffix}`;
-
-  const uploadOptions = {
-    public_id: publicId,
-    format: 'webp',
-    quality: 'auto',
-    resource_type: 'image'
-  };
-
-  return new Promise((resolve, reject) => {
-    const uploadStream = uploader.upload_stream(uploadOptions, (error, result) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(result.secure_url);
-      }
-    });
-    uploadStream.end(fileBuffer);
-  });
-}
-
-// Helper function to delete image from Cloudinary
-async function deleteImageFromCloudinary(imageUrl) {
-  if (!imageUrl) return;
-
-  try {
-    const urlParts = new URL(imageUrl).pathname.split('/');
-    const filename = urlParts.pop().split('.')[0]; // e.g., 'processed-123'
-    const folder = urlParts.pop(); // 'managers'
-    const publicId = `${folder}/${filename}`;
-
-    await new Promise((resolve, reject) => {
-      uploader.destroy(publicId, (error, result) => {
-        if (error) {
-          reject(error);
-        } else {
-          console.log(`Deleted ${publicId} from Cloudinary.`);
-          resolve(result);
-        }
-      });
-    });
-  } catch (error) {
-    console.error('Error deleting image from Cloudinary:', error);
-  }
-}
-
-// GET /api/managers - Fetch all managers
+// GET /api/managers - Fetch all managers with better error handling
 router.get('/', (req, res) => {
   db.all("SELECT id, name, role, imageUrl AS \"imageUrl\" FROM managers", [], (err, rows) => {
     if (err) {
-      res.status(500).json({ error: err.message });
-      return console.error(err.message);
+      console.error('Database error fetching managers:', err);
+      return res.status(500).json({ error: 'Failed to fetch managers. Please try again later.' });
     }
-    res.json(rows);
+    res.json(rows || []);
   });
 });
 
@@ -106,7 +44,7 @@ function validateManagerData(req, res, next) {
   next();
 }
 
-// POST /api/managers - Add new manager (protected route)
+// POST /api/managers - Add new manager
 router.post('/', isAuthenticated, validateManagerData, upload.single('image'), async (req, res) => {
   const { name, role } = req.body;
   let imageUrl = null;
@@ -117,14 +55,14 @@ router.post('/', isAuthenticated, validateManagerData, upload.single('image'), a
       return res.status(400).json({ error: 'Only image files are allowed' });
     }
     
-    // Validate file size (5MB limit)
+    // Validate file size
     if (req.file.size > 5 * 1024 * 1024) {
       return res.status(400).json({ error: 'File size must be less than 5MB' });
     }
     
     try {
       const processedImageBuffer = await sharp(req.file.buffer)
-        .resize(300, 400, { // Standard size for manager cards
+        .resize(300, 400, {
           fit: sharp.fit.cover,
           position: sharp.strategy.entropy
         })
@@ -150,7 +88,7 @@ router.post('/', isAuthenticated, validateManagerData, upload.single('image'), a
   });
 });
 
-// PUT /api/managers/:id/image - Update manager image (protected route)
+// PUT /api/managers/:id/image - Update manager image
 router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, res) => {
   const { id } = req.params;
   let imageUrl = null;
@@ -166,7 +104,7 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
       });
 
       if (oldManager && oldManager.imageUrl) {
-        await deleteImageFromCloudinary(oldManager.imageUrl);
+        await deleteImageFromCloudinary(oldManager.imageUrl, 'managers');
       }
 
       const processedImageBuffer = await sharp(req.file.buffer)
@@ -201,7 +139,7 @@ router.put('/:id/image', isAuthenticated, upload.single('image'), async (req, re
   });
 });
 
-// DELETE /api/managers/:id - Delete manager (protected route)
+// DELETE /api/managers/:id - Delete manager
 router.delete('/:id', isAuthenticated, async (req, res) => {
   const { id } = req.params;
 
@@ -215,7 +153,7 @@ router.delete('/:id', isAuthenticated, async (req, res) => {
     });
 
     if (manager && manager.imageUrl) {
-      await deleteImageFromCloudinary(manager.imageUrl);
+      await deleteImageFromCloudinary(manager.imageUrl, 'managers');
     }
 
     db.run("DELETE FROM managers WHERE id = $1", [id], function(err) {
