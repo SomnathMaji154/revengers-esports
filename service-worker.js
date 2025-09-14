@@ -1,4 +1,4 @@
-const CACHE_NAME = 'revengers-esports-v1';
+const CACHE_NAME = 'revengers-esports-v2-admin-fix';
 const urlsToCache = [
   '/',
   '/index.html',

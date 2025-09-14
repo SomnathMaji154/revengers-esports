@@ -195,9 +195,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Fetch and display registered users on the registered-users.html page
+    // Fetch and display registered users ONLY on the registered-users.html page
     const userDataBody = document.getElementById('user-data');
-    if (userDataBody) {
+    if (userDataBody && window.location.pathname.includes('registered-users.html')) {
         fetchRegisteredUsers();
     }
 
