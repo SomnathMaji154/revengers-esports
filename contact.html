@@ -3,84 +3,138 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Get in touch with Revengers Esports for inquiries, partnerships, and more.">
-    <meta name="keywords" content="esports contact, football gaming, revengers esports, competitive gaming">
-    <meta name="author" content="Revengers Esports">
-    <meta property="og:title" content="Contact Us - Revengers Esports">
-    <meta property="og:description" content="Get in touch with Revengers Esports for inquiries, partnerships, and more.">
+    <meta name="description" content="Contact Things, Inc. for inquiries, partnerships, and more.">
+    <meta name="keywords" content="things, inc, contact, inquiries, partnerships">
+    <meta name="author" content="Things, Inc.">
+    <meta property="og:title" content="Contact - Things, Inc.">
+    <meta property="og:description" content="Contact Things, Inc. for inquiries, partnerships, and more.">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://revengers-esports.onrender.com/contact.html">
     <meta property="og:image" content="/uploads/logo.webp">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Contact Us - Revengers Esports">
-    <meta name="twitter:description" content="Get in touch with Revengers Esports for inquiries, partnerships, and more.">
+    <meta name="twitter:title" content="Contact - Things, Inc.">
+    <meta name="twitter:description" content="Contact Things, Inc. for inquiries, partnerships, and more.">
     <meta name="twitter:image" content="/uploads/logo.webp">
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="/uploads/logo.webp" type="image/webp">
     <link rel="manifest" href="/manifest.json">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <title>Contact Us - Revengers Esports</title>
+    <title>Contact - Things, Inc.</title>
 </head>
 <body>
-    <script>
-        // Register service worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/service-worker.js')
-                    .then(registration => {
-                        console.log('SW registered: ', registration);
-                    })
-                    .catch(registrationError => {
-                        console.log('SW registration failed: ', registrationError);
-                    });
-            });
-        }
-    </script>
     <header class="site-header">
-        <div class="header-container">
+        <div class="container header-container">
             <div class="logo">
-                <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="header-logo">
+                Things, Inc.
             </div>
             <nav class="main-navigation">
                 <ul class="nav-menu">
                     <li><a href="index.html" class="nav-link">Home</a></li>
-                    <li><a href="players.html" class="nav-link">Players</a></li>
-                    <li><a href="managers.html" class="nav-link">Managers</a></li>
-                    <li><a href="trophies.html" class="nav-link">Trophies</a></li>
-                    <li><a href="contact.html" class="nav-link active">Contact Us</a></li>
-                    <li><a href="admin.html" class="nav-link">Admin</a></li>
+                    <li><a href="about.html" class="nav-link">About us</a></li>
+                    <li><a href="log-book.html" class="nav-link">Log book</a></li>
+                    <li><a href="contact.html" class="nav-link active">Contact</a></li>
                 </ul>
             </nav>
-            <button class="dark-toggle" id="dark-toggle">🌙</button>
         </div>
     </header>
 
     <main class="main-content">
+        <section class="hero-section">
+            <div class="container">
+                <h1 class="hero-title">Contact</h1>
+                <p class="hero-subtitle">We read every email. Really.</p>
+            </div>
+        </section>
+
         <section class="content-section">
             <div class="container">
-                <div class="section-header">
-                    <h1 class="section-title">Contact Us</h1>
-                    <p class="section-description">If you have any questions, please feel free to contact us using the form below.</p>
+                <div class="text-center mb-3xl">
+                    <h2>Get in Touch</h2>
+                    <p class="hero-subtitle">
+                        <a href="mailto:hi@things.inc" style="font-weight: 600; color: var(--color-accent);">hi@things.inc</a>
+                    </p>
+                    <button class="btn btn-outline" onclick="copyEmail()" id="copy-btn">Click to Copy</button>
+                </div>
+                
+                <div class="text-center mb-3xl">
+                    <h3>Or, message us here</h3>
                 </div>
                 
                 <div class="form-container">
                     <form id="contact-form">
                         <div class="form-group">
-                            <label for="name" class="form-label">Full Name:</label>
-                            <input type="text" id="name" name="name" class="form-input" required>
+                            <label for="name" class="form-label">Your name</label>
+                            <input type="text" id="name" class="form-input" required>
                         </div>
-
+                        
                         <div class="form-group">
-                            <label for="email" class="form-label">Email:</label>
-                            <input type="email" id="email" name="email" class="form-input" required>
+                            <label for="email" class="form-label">Your email address</label>
+                            <input type="email" id="email" class="form-input" required>
                         </div>
-
+                        
                         <div class="form-group">
-                            <label for="whatsapp" class="form-label">WhatsApp Number:</label>
-                            <input type="tel" id="whatsapp" name="whatsapp" class="form-input" required>
+                            <label for="subject" class="form-label">Subject</label>
+                            <input type="text" id="subject" class="form-input" required>
                         </div>
+                        
+                        <div class="form-group">
+                            <label for="message" class="form-label">Message</label>
+                            <textarea id="message" class="form-input" rows="6" required></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </section>
 
-                        <button type="submit" class="form-submit">Submit</button>
+        <section class="content-section">
+            <div class="container">
+                <div class="text-center mb-3xl">
+                    <h2>Frequently Asked Questions</h2>
+                </div>
+                
+                <div class="content-grid">
+                    <div class="content-card">
+                        <h3 class="card-title">How can I support Things?</h3>
+                        <p class="card-description">The best way to support us is to use our products, share them with friends, and provide feedback. We're also always looking for talented individuals to join our team!</p>
+                    </div>
+                    
+                    <div class="content-card">
+                        <h3 class="card-title">How do I delete my account on Rooms?</h3>
+                        <p class="card-description">You can delete your account from your profile settings in the Rooms app. This will permanently remove all your data and cannot be undone.</p>
+                    </div>
+                    
+                    <div class="content-card">
+                        <h3 class="card-title">How does Things make money?</h3>
+                        <p class="card-description">We offer both free and premium versions of our products. Premium features provide additional functionality for power users and teams.</p>
+                    </div>
+                    
+                    <div class="content-card">
+                        <h3 class="card-title">What's the catch?</h3>
+                        <p class="card-description">There's no catch! We believe in building great products that people love to use. Our business model is straightforward and transparent.</p>
+                    </div>
+                    
+                    <div class="content-card">
+                        <h3 class="card-title">When will Rooms be on Android?</h3>
+                        <p class="card-description">We'd like to bring Rooms to Android but do not yet have a target date. We're focused on making the iOS version as great as possible first.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <div class="container">
+                <div class="text-center mb-3xl">
+                    <h2>Stay up to date with all things Things</h2>
+                    <p class="hero-subtitle">Join our mailing list to be the first to know about new features and releases.</p>
+                </div>
+                
+                <div class="form-container">
+                    <form id="newsletter-form">
+                        <div class="form-group">
+                            <input type="email" class="form-input" placeholder="Your email address" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Subscribe</button>
                     </form>
                 </div>
             </div>
@@ -88,41 +142,103 @@
     </main>
 
     <footer class="site-footer">
-        <div class="footer-container">
+        <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h3>Revengers Esports</h3>
-                    <p>Dominating the football esports community with skill, strategy, and passion.</p>
+                    <h3>Things, Inc.</h3>
+                    <p>A team of evolved monkeys who believe in the power of collaborative creation and emergent play.</p>
                 </div>
                 
                 <div class="footer-section">
                     <h3>Quick Links</h3>
                     <ul class="footer-links">
                         <li><a href="index.html">Home</a></li>
-                        <li><a href="players.html">Players</a></li>
-                        <li><a href="managers.html">Managers</a></li>
-                        <li><a href="trophies.html">Trophies</a></li>
-                        <li><a href="contact.html">Contact Us</a></li>
+                        <li><a href="about.html">About us</a></li>
+                        <li><a href="log-book.html">Log book</a></li>
+                        <li><a href="contact.html">Contact</a></li>
+                        <li><a href="rooms.html">Rooms</a></li>
+                        <li><a href="a-bunch-of-things.html">A Bunch of Things</a></li>
                     </ul>
                 </div>
                 
                 <div class="footer-section">
-                    <h3>Connect With Us</h3>
+                    <h3>Follow us</h3>
                     <ul class="footer-links">
                         <li><a href="#">Discord</a></li>
-                        <li><a href="#">Twitter</a></li>
+                        <li><a href="#">Tiktok</a></li>
                         <li><a href="#">Instagram</a></li>
-                        <li><a href="#">YouTube</a></li>
+                        <li><a href="#">X/Twitter</a></li>
+                        <li><a href="#">Youtube</a></li>
+                        <li><a href="#">Threads</a></li>
                     </ul>
                 </div>
             </div>
             
             <div class="footer-bottom">
-                <p>&copy; 2025 Revengers Esports. All rights reserved.</p>
+                <p>© Things Inc. 2025</p>
+                <p><a href="#">Terms & Conditions</a> • <a href="#">Privacy Policy</a> • <a href="#">Media Assets</a></p>
             </div>
         </div>
     </footer>
 
-    <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add scroll animations
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px -50px 0px'
+            };
+            
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationDelay = '0.1s';
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            }, observerOptions);
+            
+            // Observe content cards
+            document.querySelectorAll('.content-card').forEach(card => {
+                card.style.animation = 'fadeInUp 0.6s ease-out both';
+                card.style.animationPlayState = 'paused';
+                observer.observe(card);
+            });
+            
+            // Contact form submission
+            const contactForm = document.getElementById('contact-form');
+            if (contactForm) {
+                contactForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    alert('Thank you for your message! We\'ll get back to you soon.');
+                    this.reset();
+                });
+            }
+            
+            // Newsletter form submission
+            const newsletterForm = document.getElementById('newsletter-form');
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    const email = this.querySelector('input[type="email"]').value;
+                    alert(`Thank you for subscribing with ${email}! You'll hear from us soon.`);
+                    this.reset();
+                });
+            }
+        });
+        
+        // Email copy functionality
+        function copyEmail() {
+            const email = 'hi@things.inc';
+            navigator.clipboard.writeText(email).then(() => {
+                const copyBtn = document.getElementById('copy-btn');
+                const originalText = copyBtn.textContent;
+                copyBtn.textContent = 'Copied!';
+                setTimeout(() => {
+                    copyBtn.textContent = originalText;
+                }, 2000);
+            });
+        }
+    </script>
 </body>
 </html>
