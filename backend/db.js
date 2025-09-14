@@ -74,6 +74,24 @@ async function initializeDatabase() {
     console.log('Schema migration skipped (columns may not exist):', err.message);
   }
 
+  // Add indexes for performance
+  const indexes = [
+    `CREATE INDEX IF NOT EXISTS idx_players_joined_date ON players (joined_date)`,
+    `CREATE INDEX IF NOT EXISTS idx_trophies_year ON trophies (year)`,
+    `CREATE INDEX IF NOT EXISTS idx_contact_submissions_date ON contact_submissions (submission_date)`,
+    `CREATE INDEX IF NOT EXISTS idx_admins_username ON admins (username)`
+  ];
+
+  for (const sql of indexes) {
+    try {
+      await pool.query(sql);
+    } catch (err) {
+      console.error('Error creating index:', err.message);
+    }
+  }
+
+  console.log('Database indexes created successfully');
+
   // Create default admin if not exists
   const defaultAdmin = { username: 'admin', password: 'adminpassword' };
   try {

@@ -72,9 +72,9 @@ async function deleteImageFromCloudinary(imageUrl) {
   }
 }
 
-// GET /api/trophies - Fetch all trophies
+// GET /api/trophies - Fetch all trophies (limited for performance)
 router.get('/', (req, res) => {
-  db.all("SELECT id, name, year, imageUrl AS \"imageUrl\" FROM trophies", [], (err, rows) => {
+  db.all("SELECT id, name, year, imageUrl AS \"imageUrl\" FROM trophies ORDER BY year DESC LIMIT 20", [], (err, rows) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return console.error(err.message);

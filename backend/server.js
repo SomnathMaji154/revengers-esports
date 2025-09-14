@@ -50,6 +50,17 @@ const corsOptions = {
   credentials: true,
 };
 app.use(cors(corsOptions));
+
+const rateLimit = require('express-rate-limit');
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100 // limit each IP to 100 requests per windowMs
+  // Optional: whitelist trusted IPs, e.g., whitelist: ['127.0.0.1']
+});
+
+app.use('/api/', limiter);
+
 app.use(express.json());
 
 // Session middleware with PostgreSQL store

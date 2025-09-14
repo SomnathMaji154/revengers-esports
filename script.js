@@ -1,4 +1,23 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Dark mode toggle functionality
+    const darkToggle = document.getElementById('dark-toggle');
+    if (darkToggle) {
+        const body = document.body;
+        const isDark = localStorage.getItem('darkMode') === 'enabled';
+        
+        if (isDark) {
+            body.classList.add('dark');
+            darkToggle.textContent = '☀️';
+        }
+
+        darkToggle.addEventListener('click', () => {
+            body.classList.toggle('dark');
+            const isNowDark = body.classList.contains('dark');
+            darkToggle.textContent = isNowDark ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', isNowDark ? 'enabled' : 'disabled');
+        });
+    }
+
     // Handle contact form submission with enhanced validation and feedback
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
