@@ -1,6 +1,5 @@
 const config = require('./config');
 const logger = require('./logger');
-const config = require('./config');
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
