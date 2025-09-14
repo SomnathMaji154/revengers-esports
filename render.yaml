@@ -1,0 +1,52 @@
+# Render Blueprint for Revengers Esports
+services:
+  # Web Service
+  - type: web
+    name: revengers-esports-web
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: BCRYPT_ROUNDS
+        value: 12
+      - key: MAX_FILE_SIZE_MB
+        value: 5
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: AUTH_RATE_LIMIT_MAX
+        value: 5
+      - key: COMPRESSION_LEVEL
+        value: 6
+      - key: CACHE_MAX_AGE
+        value: 3600
+      - key: LOG_LEVEL
+        value: info
+    # These will be set via Render dashboard:
+    # - DATABASE_URL (from PostgreSQL service)
+    # - CLOUDINARY_CLOUD_NAME
+    # - CLOUDINARY_API_KEY  
+    # - CLOUDINARY_API_SECRET
+    # - PRODUCTION_URL (auto-generated)
+
+  # PostgreSQL Database
+  - type: pserv
+    name: revengers-esports-db
+    plan: free
+    databaseName: revengers_esports
+    databaseUser: revengers_admin
+    ipAllowList: [] # Allow all IPs for simplicity
+
+# Note: Render's free tier includes:
+# - 750 hours/month web service
+# - 90 days of inactivity before sleep
+# - PostgreSQL with 1GB storage, 97 hours/month
+# - Automatic SSL certificates
+# - Git-based deployments

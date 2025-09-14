@@ -23,100 +23,33 @@
 <body>
     <header class="site-header">
         <div class="container header-container">
+            <button class="menu-toggle" id="menu-toggle" aria-label="Open navigation menu">
+                &#9776;
+            </button>
             <div class="logo">
                 <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="logo-img">
                 Revengers Esports
             </div>
-            <nav class="main-navigation">
-                <ul class="nav-menu">
-                    <li><a href="index.html" class="nav-link active">Home</a></li>
-                    <li><a href="players.html" class="nav-link">Players</a></li>
-                    <li><a href="managers.html" class="nav-link">Managers</a></li>
-                    <li><a href="trophies.html" class="nav-link">Trophies</a></li>
-                    <li><a href="about.html" class="nav-link">About</a></li>
-                    <li><a href="contact.html" class="nav-link">Contact</a></li>
-                    <li><a href="admin.html" class="nav-link" id="admin-link" style="display: none;">Admin</a></li>
-                </ul>
-            </nav>
         </div>
     </header>
+
+    <aside class="side-panel" id="side-panel">
+        <nav class="side-navigation">
+            <ul class="side-nav-menu">
+                <li><a href="index.html" class="side-nav-link">Home</a></li>
+                <li><a href="players.html" class="side-nav-link">Players</a></li>
+                <li><a href="managers.html" class="side-nav-link">Managers</a></li>
+                <li><a href="trophies.html" class="side-nav-link">Trophies</a></li>
+                <li><a href="contact.html" class="side-nav-link">Contact Us</a></li>
+                <li><a href="admin.html" class="side-nav-link" id="admin-link-side" style="display: none;">Admin</a></li>
+            </ul>
+        </nav>
+    </aside>
 
     <main class="main-content">
         <section class="hero-section">
             <div class="container">
                 <h1 class="hero-title">Welcome to Revengers Esports</h1>
-                <p class="hero-subtitle">The ultimate football esports team dominating the virtual pitch. Join our revolution!</p>
-                <a href="#featured-players" class="hero-cta">
-                    <span>Meet the Team</span>
-                </a>
-            </div>
-        </section>
-
-        <section class="content-section" id="featured-players">
-            <div class="container">
-                <div class="text-center mb-3xl">
-                    <h2>Featured Players</h2>
-                    <p class="hero-subtitle">Our star players ready to conquer</p>
-                </div>
-                <div class="content-grid" id="players-grid">
-                    <!-- Dynamic content loaded by script.js -->
-                </div>
-                <div class="text-center mt-xl">
-                    <a href="players.html" class="btn btn-primary">View All Players</a>
-                </div>
-            </div>
-        </section>
-
-        <section class="content-section" id="trophies-section">
-            <div class="container">
-                <div class="text-center mb-3xl">
-                    <h2>Our Trophies</h2>
-                    <p class="hero-subtitle">Achievements that define our legacy</p>
-                </div>
-                <div class="content-grid" id="trophies-grid">
-                    <!-- Dynamic content loaded by script.js -->
-                </div>
-                <div class="text-center mt-xl">
-                    <a href="trophies.html" class="btn btn-primary">View All Trophies</a>
-                </div>
-            </div>
-        </section>
-
-        <section class="content-section">
-            <div class="container">
-                <div class="text-center mb-3xl">
-                    <h2>Management Team</h2>
-                    <p class="hero-subtitle">Leaders driving our success</p>
-                </div>
-                <div class="content-grid" id="managers-grid">
-                    <!-- Dynamic content loaded by script.js -->
-                </div>
-                <div class="text-center mt-xl">
-                    <a href="managers.html" class="btn btn-primary">View All Managers</a>
-                </div>
-            </div>
-        </section>
-
-        <section class="content-section">
-            <div class="container">
-                <div class="text-center mb-3xl">
-                    <h2>Join the Revengers</h2>
-                    <p class="hero-subtitle">Get in touch and be part of the team.</p>
-                </div>
-                <div class="form-container">
-                    <form id="contact-form">
-                        <div class="form-group">
-                            <input type="text" class="form-input" id="contact-name" placeholder="Your Name" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="email" class="form-input" id="contact-email" placeholder="Your Email" required>
-                        </div>
-                        <div class="form-group">
-                            <input type="tel" class="form-input" id="contact-whatsapp" placeholder="WhatsApp Number" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">Submit</button>
-                    </form>
-                </div>
             </div>
         </section>
     </main>
@@ -157,56 +90,5 @@
     </footer>
 
     <script src="script.js"></script>
-    <script>
-        // Initialize home page specific functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            loadHomeContent();
-            checkAdminStatus();
-
-            // Contact form submission
-            const contactForm = document.getElementById('contact-form');
-            if (contactForm) {
-                contactForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    const name = document.getElementById('contact-name').value;
-                    const email = document.getElementById('contact-email').value;
-                    const whatsapp = document.getElementById('contact-whatsapp').value;
-                    submitContactForm(name, email, whatsapp);
-                });
-            }
-
-            // Smooth scrolling
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    const target = document.querySelector(this.getAttribute('href'));
-                    if (target) {
-                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    }
-                });
-            });
-        });
-
-        // Home page specific: Load dynamic content
-        async function loadHomeContent() {
-            try {
-                // Load 3 featured players
-                const players = await fetchPlayers(3);
-                displayPlayers(players, 'players-grid');
-
-                // Load 3 trophies
-                const trophies = await fetchTrophies(3);
-                displayTrophies(trophies, 'trophies-grid');
-
-                // Load 3 managers
-                const managers = await fetchManagers(3);
-                displayManagers(managers, 'managers-grid');
-            } catch (error) {
-                console.error('Error loading home content:', error);
-                // Fallback static content if API fails
-                document.getElementById('players-grid').innerHTML = '<p class="text-center">Players loading...</p>';
-            }
-        }
-    </script>
 </body>
 </html>

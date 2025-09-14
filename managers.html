@@ -38,23 +38,28 @@
     </script>
     <header class="site-header">
         <div class="container header-container">
+            <button class="menu-toggle" id="menu-toggle" aria-label="Open navigation menu">
+                &#9776;
+            </button>
             <div class="logo">
-                <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="header-logo">
+                <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="logo-img">
                 Revengers Esports
             </div>
-            <nav class="main-navigation">
-                <ul class="nav-menu">
-                    <li><a href="index.html" class="nav-link">Home</a></li>
-                    <li><a href="players.html" class="nav-link">Players</a></li>
-                    <li><a href="managers.html" class="nav-link active">Managers</a></li>
-                    <li><a href="trophies.html" class="nav-link">Trophies</a></li>
-                    <li><a href="about.html" class="nav-link">About</a></li>
-                    <li><a href="contact.html" class="nav-link">Contact</a></li>
-                    <li><a href="admin.html" class="nav-link" id="admin-link" style="display: none;">Admin</a></li>
-                </ul>
-            </nav>
         </div>
     </header>
+
+    <aside class="side-panel" id="side-panel">
+        <nav class="side-navigation">
+            <ul class="side-nav-menu">
+                <li><a href="index.html" class="side-nav-link">Home</a></li>
+                <li><a href="players.html" class="side-nav-link">Players</a></li>
+                <li><a href="managers.html" class="side-nav-link">Managers</a></li>
+                <li><a href="trophies.html" class="side-nav-link">Trophies</a></li>
+                <li><a href="contact.html" class="side-nav-link">Contact Us</a></li>
+                <li><a href="admin.html" class="side-nav-link" id="admin-link-side" style="display: none;">Admin</a></li>
+            </ul>
+        </nav>
+    </aside>
 
     <main class="main-content">
         <section class="content-section">
@@ -121,8 +126,29 @@
 
     <script src="script.js"></script>
     <script>
+        // Page-specific script for managers
         document.addEventListener('DOMContentLoaded', function() {
-            checkAdminStatus();
+            async function loadManagersPage() {
+                const managersGrid = document.getElementById('managers-grid');
+                try {
+                    const managers = await fetchManagers(); // Fetch all
+                    displayManagers(managers, 'managers-grid', false); // Not home page
+                } catch (error) {
+                    console.error('Error loading managers:', error);
+                    managersGrid.innerHTML = '<div class="manager-card"><div class="card-content text-center"><p>Error loading managers. Please try again later.</p></div></div>';
+                }
+            }
+
+            function filterManagers(searchTerm) {
+                const cards = document.querySelectorAll('.manager-card');
+                const term = searchTerm.toLowerCase();
+                cards.forEach(card => {
+                    const name = card.querySelector('.card-back-name') ? card.querySelector('.card-back-name').textContent.toLowerCase() : '';
+                    const role = card.querySelector('.card-back-details') ? card.querySelector('.card-back-details').textContent.toLowerCase() : '';
+                    card.style.display = (name.includes(term) || role.includes(term)) ? 'block' : 'none';
+                });
+            }
+
             loadManagersPage();
 
             // Search functionality
@@ -133,27 +159,6 @@
                 });
             }
         });
-
-        async function loadManagersPage() {
-            const managersGrid = document.getElementById('managers-grid');
-            try {
-                const managers = await fetchManagers(); // Fetch all
-                displayManagers(managers, 'managers-grid', false); // Not home page
-            } catch (error) {
-                console.error('Error loading managers:', error);
-                managersGrid.innerHTML = '<div class="manager-card"><div class="card-content text-center"><p>Error loading managers. Please try again later.</p></div></div>';
-            }
-        }
-
-        function filterManagers(searchTerm) {
-            const cards = document.querySelectorAll('.player-card');
-            const term = searchTerm.toLowerCase();
-            cards.forEach(card => {
-                const name = card.querySelector('.card-back-name') ? card.querySelector('.card-back-name').textContent.toLowerCase() : '';
-                const role = card.querySelector('.card-back-details') ? card.querySelector('.card-back-details').textContent.toLowerCase() : '';
-                card.style.display = (name.includes(term) || role.includes(term)) ? 'block' : 'none';
-            });
-        }
     </script>
 </body>
 </html>

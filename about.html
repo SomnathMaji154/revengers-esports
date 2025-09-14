@@ -24,23 +24,28 @@
 <body>
     <header class="site-header">
         <div class="container header-container">
+            <button class="menu-toggle" id="menu-toggle" aria-label="Open navigation menu">
+                &#9776;
+            </button>
             <div class="logo">
-                <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="header-logo">
+                <img src="/uploads/logo.webp" alt="Revengers Esports Logo" class="logo-img">
                 Revengers Esports
             </div>
-            <nav class="main-navigation">
-                <ul class="nav-menu">
-                    <li><a href="index.html" class="nav-link">Home</a></li>
-                    <li><a href="players.html" class="nav-link">Players</a></li>
-                    <li><a href="managers.html" class="nav-link">Managers</a></li>
-                    <li><a href="trophies.html" class="nav-link">Trophies</a></li>
-                    <li><a href="about.html" class="nav-link active">About</a></li>
-                    <li><a href="contact.html" class="nav-link">Contact</a></li>
-                    <li><a href="admin.html" class="nav-link" id="admin-link" style="display: none;">Admin</a></li>
-                </ul>
-            </nav>
         </div>
     </header>
+
+    <aside class="side-panel" id="side-panel">
+        <nav class="side-navigation">
+            <ul class="side-nav-menu">
+                <li><a href="index.html" class="side-nav-link">Home</a></li>
+                <li><a href="players.html" class="side-nav-link">Players</a></li>
+                <li><a href="managers.html" class="side-nav-link">Managers</a></li>
+                <li><a href="trophies.html" class="side-nav-link">Trophies</a></li>
+                <li><a href="contact.html" class="side-nav-link">Contact Us</a></li>
+                <li><a href="admin.html" class="side-nav-link" id="admin-link-side" style="display: none;">Admin</a></li>
+            </ul>
+        </nav>
+    </aside>
 
     <main class="main-content">
         <section class="hero-section">
@@ -152,28 +157,13 @@
 
     <script src="script.js"></script>
     <script>
+        // Page-specific script for about
         document.addEventListener('DOMContentLoaded', function() {
-            checkAdminStatus();
-
             // Load managers for about page
             async function loadAboutManagers() {
                 try {
                     const managers = await fetchManagers(4); // Limit to 4
-                    const grid = document.getElementById('managers-about-grid');
-                    grid.innerHTML = '';
-                    managers.forEach(manager => {
-                        const card = document.createElement('div');
-                        card.className = 'content-card';
-                        card.innerHTML = `
-                            <img src="${manager.imageUrl || '/uploads/default-manager.jpg'}" alt="${manager.name}" class="manager-img">
-                            <h3 class="card-title">${manager.name}</h3>
-                            <p class="card-description">${manager.role}</p>
-                        `;
-                        grid.appendChild(card);
-                    });
-                    if (managers.length === 0) {
-                        grid.innerHTML = '<p class="text-center">Team loading...</p>';
-                    }
+                    displayManagers(managers, 'managers-about-grid', false); // Use the shared display function
                 } catch (error) {
                     console.error('Error loading managers for about:', error);
                     document.getElementById('managers-about-grid').innerHTML = '<p class="text-center">Team information unavailable.</p>';

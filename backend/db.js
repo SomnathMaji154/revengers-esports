@@ -1,13 +1,12 @@
 const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
+const config = require('./config');
+const logger = require('./logger');
 
-// Database configuration with fallbacks
+// Database configuration
 const dbConfig = {
-  connectionString: process.env.DATABASE_URL || 'postgresql://localhost:5432/revengers_esports',
-  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
-  connectionTimeoutMillis: 500,
-  idleTimeoutMillis: 30000,
-  max: 10
+  connectionString: config.DATABASE_URL,
+  ...config.dbPoolConfig
 };
 
 const pool = new Pool(dbConfig);
@@ -22,122 +21,215 @@ let mockData = {
 };
 
 // Add default admin for mock mode
-if (!process.env.NODE_ENV || process.env.NODE_ENV === 'development') {
-  const defaultAdmin = { username: 'admin', password: process.env.DEFAULT_ADMIN_PASSWORD || 'adminpassword' };
+if (config.isDevelopment && config.defaultAdmin) {
   mockData.admins.push({
     id: 1,
-    username: defaultAdmin.username,
-    password: defaultAdmin.password // In real implementation, this would be hashed
+    username: config.defaultAdmin.username,
+    password: config.defaultAdmin.password // In real implementation, this would be hashed
   });
-  console.log('Mock admin created:', mockData.admins[0]);
+  logger.debug('Mock admin created', { username: config.defaultAdmin.username });
 }
 
-// Test database connection
-pool.query('SELECT NOW()', (err, res) => {
-  if (err) {
-    console.warn('Warning: Could not connect to PostgreSQL database. Running in mock mode.');
-    console.warn('For full functionality, please configure DATABASE_URL environment variable.');
-    // Database operations will be mocked
-    global.MOCK_MODE = true;
-  } else {
-    console.log('Connected to PostgreSQL database.');
-    initializeDatabase();
+// Test database connection with better error handling
+let connectionRetries = 0;
+const maxRetries = 3;
+
+async function testConnection() {
+  try {
+    const result = await pool.query('SELECT NOW() as now, version() as version');
+    logger.info('Connected to PostgreSQL database', {
+      timestamp: result.rows[0].now,
+      version: result.rows[0].version.split(' ')[0]
+    });
     global.MOCK_MODE = false;
+    await initializeDatabase();
+  } catch (err) {
+    connectionRetries++;
+    logger.error('Database connection failed', {
+      attempt: connectionRetries,
+      maxRetries,
+      error: err.message
+    });
+    
+    if (connectionRetries < maxRetries) {
+      logger.info('Retrying database connection', { delay: '2 seconds' });
+      setTimeout(testConnection, 2000);
+    } else {
+      logger.warn('Max connection retries reached. Running in mock mode', {
+        warning: 'For full functionality, please configure DATABASE_URL environment variable'
+      });
+      global.MOCK_MODE = true;
+    }
   }
-});
+}
+
+testConnection();
 
 async function initializeDatabase() {
+  logger.info('Initializing database schema...');
+  
   const tables = [
-    `CREATE TABLE IF NOT EXISTS admins (
-      id SERIAL PRIMARY KEY,
-      username VARCHAR(255) UNIQUE NOT NULL,
-      password TEXT NOT NULL
-    )`,
-    `CREATE TABLE IF NOT EXISTS players (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      jerseyNumber INTEGER NOT NULL,
-      imageUrl TEXT,
-      stars INTEGER DEFAULT 0,
-      joined_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-    `CREATE TABLE IF NOT EXISTS managers (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      role VARCHAR(255) NOT NULL,
-      imageUrl TEXT
-    )`,
-    `CREATE TABLE IF NOT EXISTS trophies (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      year INTEGER NOT NULL,
-      imageUrl TEXT
-    )`,
-    `CREATE TABLE IF NOT EXISTS contact_submissions (
-      id SERIAL PRIMARY KEY,
-      name VARCHAR(255) NOT NULL,
-      email VARCHAR(255) NOT NULL,
-      whatsapp VARCHAR(255) NOT NULL,
-      submission_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )`,
-    `CREATE TABLE IF NOT EXISTS sessions (
-      sid VARCHAR(255) PRIMARY KEY,
-      sess JSON NOT NULL,
-      expire TIMESTAMP NOT NULL
-    );`
+    {
+      name: 'admins',
+      sql: `CREATE TABLE IF NOT EXISTS admins (
+        id SERIAL PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_login TIMESTAMP
+      )`
+    },
+    {
+      name: 'players',
+      sql: `CREATE TABLE IF NOT EXISTS players (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        jerseyNumber INTEGER NOT NULL UNIQUE,
+        imageUrl TEXT,
+        stars INTEGER DEFAULT 0 CHECK (stars >= 1 AND stars <= 5),
+        joined_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`
+    },
+    {
+      name: 'managers',
+      sql: `CREATE TABLE IF NOT EXISTS managers (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        role VARCHAR(255) NOT NULL,
+        imageUrl TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`
+    },
+    {
+      name: 'trophies',
+      sql: `CREATE TABLE IF NOT EXISTS trophies (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        year INTEGER NOT NULL CHECK (year >= 1900 AND year <= EXTRACT(YEAR FROM NOW()) + 1),
+        imageUrl TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )`
+    },
+    {
+      name: 'contact_submissions',
+      sql: `CREATE TABLE IF NOT EXISTS contact_submissions (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        whatsapp VARCHAR(255) NOT NULL,
+        submission_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        ip_address INET,
+        user_agent TEXT
+      )`
+    },
+    {
+      name: 'sessions',
+      sql: `CREATE TABLE IF NOT EXISTS sessions (
+        sid VARCHAR(255) PRIMARY KEY,
+        sess JSON NOT NULL,
+        expire TIMESTAMP NOT NULL
+      )`
+    }
   ];
 
-  for (const sql of tables) {
+  for (const table of tables) {
     try {
-      await pool.query(sql);
+      await pool.query(table.sql);
+      logger.debug('Table created/verified', { table: table.name });
     } catch (err) {
-      console.error('Error creating table:', err.message);
+      logger.error('Error creating table', { table: table.name, error: err.message });
+      throw err;
     }
   }
 
   // Migrate existing data - remove imageData if it exists
   try {
-    await pool.query('ALTER TABLE IF EXISTS players DROP COLUMN IF EXISTS imageData');
-    await pool.query('ALTER TABLE IF EXISTS managers DROP COLUMN IF EXISTS imageData');
-    await pool.query('ALTER TABLE IF EXISTS trophies DROP COLUMN IF EXISTS imageData');
-    console.log('Database schema migrated successfully');
+    const migrations = [
+      'ALTER TABLE IF EXISTS players DROP COLUMN IF EXISTS imageData',
+      'ALTER TABLE IF EXISTS managers DROP COLUMN IF EXISTS imageData',
+      'ALTER TABLE IF EXISTS trophies DROP COLUMN IF EXISTS imageData',
+      'ALTER TABLE IF EXISTS players ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+      'ALTER TABLE IF EXISTS managers ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+      'ALTER TABLE IF EXISTS managers ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+      'ALTER TABLE IF EXISTS trophies ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+      'ALTER TABLE IF EXISTS trophies ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+      'ALTER TABLE IF EXISTS admins ADD COLUMN IF NOT EXISTS created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP',
+      'ALTER TABLE IF EXISTS admins ADD COLUMN IF NOT EXISTS last_login TIMESTAMP',
+      'ALTER TABLE IF EXISTS contact_submissions ADD COLUMN IF NOT EXISTS ip_address INET',
+      'ALTER TABLE IF EXISTS contact_submissions ADD COLUMN IF NOT EXISTS user_agent TEXT'
+    ];
+    
+    for (const migration of migrations) {
+      await pool.query(migration);
+    }
+    logger.info('Database schema migrated successfully');
   } catch (err) {
-    console.log('Schema migration skipped (columns may not exist):', err.message);
+    logger.debug('Schema migration completed with warnings', { message: err.message });
   }
 
   // Add indexes for performance
   const indexes = [
-    `CREATE INDEX IF NOT EXISTS idx_players_joined_date ON players (joined_date)`,
-    `CREATE INDEX IF NOT EXISTS idx_trophies_year ON trophies (year)`,
-    `CREATE INDEX IF NOT EXISTS idx_contact_submissions_date ON contact_submissions (submission_date)`,
-    `CREATE INDEX IF NOT EXISTS idx_admins_username ON admins (username)`
+    {
+      name: 'idx_players_jersey_unique',
+      sql: 'CREATE UNIQUE INDEX IF NOT EXISTS idx_players_jersey_unique ON players (jerseyNumber)'
+    },
+    {
+      name: 'idx_players_joined_date',
+      sql: 'CREATE INDEX IF NOT EXISTS idx_players_joined_date ON players (joined_date DESC)'
+    },
+    {
+      name: 'idx_trophies_year',
+      sql: 'CREATE INDEX IF NOT EXISTS idx_trophies_year ON trophies (year DESC)'
+    },
+    {
+      name: 'idx_contact_submissions_date',
+      sql: 'CREATE INDEX IF NOT EXISTS idx_contact_submissions_date ON contact_submissions (submission_date DESC)'
+    },
+    {
+      name: 'idx_admins_username',
+      sql: 'CREATE INDEX IF NOT EXISTS idx_admins_username ON admins (username)'
+    },
+    {
+      name: 'idx_contact_email',
+      sql: 'CREATE INDEX IF NOT EXISTS idx_contact_email ON contact_submissions (email)'
+    },
+    {
+      name: 'idx_sessions_expire',
+      sql: 'CREATE INDEX IF NOT EXISTS idx_sessions_expire ON sessions (expire)'
+    }
   ];
 
-  for (const sql of indexes) {
+  for (const index of indexes) {
     try {
-      await pool.query(sql);
+      await pool.query(index.sql);
+      logger.debug('Index created/verified', { index: index.name });
     } catch (err) {
-      console.error('Error creating index:', err.message);
+      logger.warn('Index creation warning', { index: index.name, error: err.message });
     }
   }
 
-  console.log('Database indexes created successfully');
+  logger.info('Database indexes created successfully');
 
   // Create default admin if not exists (only in development)
-  if (process.env.NODE_ENV === 'development') {
-    const defaultAdmin = { username: 'admin', password: process.env.DEFAULT_ADMIN_PASSWORD || 'adminpassword' };
+  if (config.isDevelopment && config.defaultAdmin) {
     try {
-      const res = await pool.query('SELECT * FROM admins WHERE username = $1', [defaultAdmin.username]);
+      const res = await pool.query('SELECT * FROM admins WHERE username = $1', [config.defaultAdmin.username]);
       if (res.rows.length === 0) {
-        const hash = await bcrypt.hash(defaultAdmin.password, 10);
-        await pool.query('INSERT INTO admins (username, password) VALUES ($1, $2)', [defaultAdmin.username, hash]);
+        const hash = await bcrypt.hash(config.defaultAdmin.password, config.BCRYPT_ROUNDS);
+        await pool.query('INSERT INTO admins (username, password) VALUES ($1, $2)', [config.defaultAdmin.username, hash]);
+        logger.info('Default admin created', { username: config.defaultAdmin.username });
+      } else {
+        logger.debug('Default admin already exists', { username: config.defaultAdmin.username });
       }
     } catch (err) {
-      console.error('Error creating default admin:', err.message);
+      logger.error('Error creating default admin', { error: err.message });
     }
- }
+  }
 
-  console.log('Database initialized. Tables ready.');
+  logger.info('Database initialized successfully');
 }
 
 // Helper functions to match existing API (callback-based for compatibility)

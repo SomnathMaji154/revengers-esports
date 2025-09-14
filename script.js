@@ -1,6 +1,39 @@
 // Enhanced frontend JavaScript with better error handling and performance optimizations
 document.addEventListener('DOMContentLoaded', function() {
 
+    // Side panel functionality
+    const menuToggle = document.getElementById('menu-toggle');
+    const sidePanel = document.getElementById('side-panel');
+
+    function showPanel() {
+        if (sidePanel) sidePanel.classList.add('open');
+    }
+
+    function hidePanel() {
+        if (sidePanel) sidePanel.classList.remove('open');
+    }
+
+    if (menuToggle) {
+        menuToggle.addEventListener('mouseenter', showPanel);
+        menuToggle.addEventListener('click', showPanel);
+    }
+
+    if (sidePanel) {
+        sidePanel.addEventListener('mouseleave', hidePanel);
+    }
+
+    // Close side panel when clicking outside
+    document.addEventListener('click', function(event) {
+        if (sidePanel && menuToggle) {
+            const isClickInsidePanel = sidePanel.contains(event.target);
+            const isClickOnMenuToggle = menuToggle.contains(event.target);
+
+            if (!isClickInsidePanel && !isClickOnMenuToggle && sidePanel.classList.contains('open')) {
+                hidePanel();
+            }
+        }
+    });
+
     // Enhanced loading overlay with better UX
     function showLoading(message = 'Loading...') {
         let overlay = document.getElementById('loading-overlay');
@@ -35,10 +68,10 @@ document.addEventListener('DOMContentLoaded', function() {
         contactForm.addEventListener('submit', async function(event) {
             event.preventDefault();
 
-            const name = document.getElementById('name').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const whatsapp = document.getElementById('whatsapp').value.trim();
-            const submitButton = contactForm.querySelector('.form-submit');
+            const name = document.getElementById('contact-name')?.value.trim() || document.getElementById('name')?.value.trim() || '';
+            const email = document.getElementById('contact-email')?.value.trim() || document.getElementById('email')?.value.trim() || '';
+            const whatsapp = document.getElementById('contact-whatsapp')?.value.trim() || document.getElementById('whatsapp')?.value.trim() || '';
+            const submitButton = contactForm.querySelector('.form-submit') || contactForm.querySelector('button[type="submit"]');
 
             // Validation
             if (!name || !email || !whatsapp) {
@@ -61,9 +94,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Disable submit button and show loading state
-            const originalText = submitButton.textContent;
-            submitButton.textContent = 'Submitting...';
-            submitButton.disabled = true;
+            const originalText = submitButton ? submitButton.textContent : 'Submit';
+            if (submitButton) {
+                submitButton.textContent = 'Submitting...';
+                submitButton.disabled = true;
+            }
             showLoading('Submitting your message...');
 
             try {
@@ -93,8 +128,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } finally {
                 // Re-enable submit button
-                submitButton.textContent = originalText;
-                submitButton.disabled = false;
+                if (submitButton) {
+                    submitButton.textContent = originalText;
+                    submitButton.disabled = false;
+                }
                 hideLoading();
             }
         });
@@ -122,11 +159,27 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             const data = await response.json();
+            const adminLink = document.getElementById('admin-link');
+            if (adminLink) {
+                adminLink.style.display = data.loggedIn ? 'block' : 'none';
+            }
+            const adminLinkSide = document.getElementById('admin-link-side');
+            if (adminLinkSide) {
+                adminLinkSide.style.display = data.loggedIn ? 'block' : 'none';
+            }
             return data.loggedIn;
         } catch (error) {
             console.error('Error checking admin status:', error);
             if (error.name === 'AbortError') {
                 showAlert('Request timeout. Please try again.', 'error');
+            }
+            const adminLink = document.getElementById('admin-link');
+            if (adminLink) {
+                adminLink.style.display = 'none';
+            }
+            const adminLinkSide = document.getElementById('admin-link-side');
+            if (adminLinkSide) {
+                adminLinkSide.style.display = 'none';
             }
             return false;
         }
@@ -232,4 +285,173 @@ document.addEventListener('DOMContentLoaded', function() {
         // Focus the alert for accessibility
         alert.focus();
     }
+
+    // API Functions for fetching data
+    async function fetchPlayers(limit = null) {
+        try {
+            const url = limit ? `/api/players?limit=${limit}` : '/api/players';
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to fetch players');
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching players:', error);
+            return [];
+        }
+    }
+
+    async function fetchManagers(limit = null) {
+        try {
+            const url = limit ? `/api/managers?limit=${limit}` : '/api/managers';
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to fetch managers');
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching managers:', error);
+            return [];
+        }
+    }
+
+    async function fetchTrophies(limit = null) {
+        try {
+            const url = limit ? `/api/trophies?limit=${limit}` : '/api/trophies';
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to fetch trophies');
+            return await response.json();
+        } catch (error) {
+            console.error('Error fetching trophies:', error);
+            return [];
+        }
+    }
+
+    // Display functions for cards
+    function displayPlayers(players, containerId, isHomePage = true) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (players.length === 0) {
+            container.innerHTML = '<p class="text-center">No players found.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        players.forEach(player => {
+            const card = document.createElement('div');
+            card.className = 'player-card';
+            
+            // Generate stars HTML
+            let starsHTML = '';
+            for (let i = 0; i < player.stars; i++) {
+                starsHTML += '<span class="star filled">★</span>';
+            }
+            for (let i = player.stars; i < 5; i++) {
+                starsHTML += '<span class="star">★</span>';
+            }
+            
+            // Format joined date
+            const joinedDate = new Date(player.joined_date).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            
+            card.innerHTML = `
+                <div class="player-card-inner">
+                    <div class="player-card-front" style="background-image: url('${player.imageUrl || '/uploads/default-player.jpg'}')">
+                    </div>
+                    <div class="player-card-back">
+                        <div class="card-back-content">
+                            <h3 class="card-back-name">${player.name}</h3>
+                            <div class="card-back-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">Jersey Number:</span>
+                                    <span class="stat-value">${player.jerseyNumber || '?'}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Rating:</span>
+                                    <span class="stat-value">${starsHTML}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Joined:</span>
+                                    <span class="stat-value">${joinedDate}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function displayManagers(managers, containerId, isHomePage = true) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (managers.length === 0) {
+            container.innerHTML = '<p class="text-center">No managers found.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        managers.forEach(manager => {
+            const card = document.createElement('div');
+            card.className = 'manager-card';
+            
+            card.innerHTML = `
+                <div class="manager-card-inner">
+                    <div class="manager-card-front" style="background-image: url('${manager.imageUrl || '/uploads/default-manager.jpg'}')">
+                    </div>
+                    <div class="manager-card-back">
+                        <div class="card-back-content">
+                            <h3 class="card-back-name">${manager.name}</h3>
+                            <p class="card-back-details">${manager.role}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function displayTrophies(trophies, containerId, isHomePage = true) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+
+        if (trophies.length === 0) {
+            container.innerHTML = '<p class="text-center">No trophies found.</p>';
+            return;
+        }
+
+        container.innerHTML = '';
+        trophies.forEach(trophy => {
+            const card = document.createElement('div');
+            card.className = 'trophy-card';
+            
+            card.innerHTML = `
+                <div class="trophy-card-inner">
+                    <div class="trophy-card-front" style="background-image: url('${trophy.imageUrl || '/uploads/default-trophy.jpg'}')">
+                    </div>
+                    <div class="trophy-card-back">
+                        <div class="card-back-content">
+                            <h3 class="card-back-name">${trophy.name}</h3>
+                            <p class="card-back-details">Awarded in ${trophy.year}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    // Initialize admin status check on all pages
+    checkAdminStatus();
+
+    // Export functions to global scope for use in inline scripts
+    window.fetchPlayers = fetchPlayers;
+    window.fetchManagers = fetchManagers;
+    window.fetchTrophies = fetchTrophies;
+    window.displayPlayers = displayPlayers;
+    window.displayManagers = displayManagers;
+    window.displayTrophies = displayTrophies;
+    window.checkAdminStatus = checkAdminStatus;
 });

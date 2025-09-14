@@ -5,11 +5,24 @@
   "main": "backend/server.js",
   "scripts": {
     "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "echo \"No linter configured\" && exit 0",
+    "dev": "nodemon backend/server.js --watch backend",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint backend/ *.js",
+    "lint:fix": "eslint backend/ *.js --fix",
+    "format": "prettier --write \"**/*.{js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,json,md}\"",
     "build": "echo \"No build step required\" && exit 0",
-    "deploy": "echo \"Ready for deployment\" && exit 0"
+    "deploy": "npm run lint && npm run test && echo \"Ready for deployment\"",
+    "deploy:setup": "node scripts/deploy-setup.js",
+    "setup": "npm install && npm run setup:env",
+    "setup:env": "node -e \"if(!require('fs').existsSync('.env')){require('fs').copyFileSync('.env.example','.env');console.log('Created .env from template. Please update with your values.');}\"",
+    "db:migrate": "node backend/migrate.js",
+    "security:check": "npm audit",
+    "health": "curl -f http://localhost:3000/health || exit 1",
+    "prestart": "npm run security:check",
+    "postinstall": "npm run setup:env"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -17,17 +30,28 @@
     "compression": "^1.8.1",
     "connect-pg-simple": "^10.0.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.2",
     "express": "^4.18.2",
     "express-rate-limit": "^8.1.0",
     "express-session": "^1.18.0",
+    "express-validator": "^7.0.1",
     "helmet": "^8.1.0",
+    "joi": "^17.9.2",
     "morgan": "^1.10.1",
     "multer": "^1.4.5-lts.1",
     "pg": "^8.16.3",
-    "sharp": "^0.33.4"
+    "sharp": "^0.33.4",
+    "winston": "^3.10.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "eslint": "^8.44.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-security": "^1.7.1",
+    "jest": "^29.6.1",
+    "nodemon": "^3.0.1",
+    "prettier": "^3.0.0",
+    "supertest": "^6.3.3"
   },
   "engines": {
     "node": ">=18.0.0"

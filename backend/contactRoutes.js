@@ -2,7 +2,8 @@ const express = require('express');
 const db = require('./db');
 const { isAuthenticated } = require('./auth');
 
-const router = express.Router();
+const contactRouter = express.Router();
+const registeredUsersRouter = express.Router();
 
 // Input validation middleware for contact form
 function validateContactData(req, res, next) {
@@ -16,7 +17,7 @@ function validateContactData(req, res, next) {
   // Sanitize inputs (remove any HTML tags)
   const sanitized_name = name.replace(/<[^>]*>/g, '').trim();
   const sanitized_email = email.replace(/<[^>]*>/g, '').trim();
-  const sanitized_whatsapp = whatsapp.replace(/<[^>]*>/g, '').trim();
+  const sanitized_whatsapp = whatsapp.replace(/\D/g, '').trim();
   
   if (sanitized_name.length === 0 || sanitized_email.length === 0 || sanitized_whatsapp.length === 0) {
     return res.status(400).json({ error: 'Name, email, and WhatsApp number cannot be empty' });
@@ -30,7 +31,7 @@ function validateContactData(req, res, next) {
   
   // Validate WhatsApp number (10-15 digits)
   const whatsappRegex = /^\d{10,15}$/;
-  if (!whatsappRegex.test(sanitized_whatsapp.replace(/\D/g, ''))) {
+  if (!whatsappRegex.test(sanitized_whatsapp)) {
     return res.status(400).json({ error: 'Please enter a valid WhatsApp number (10-15 digits)' });
   }
   
@@ -42,7 +43,7 @@ function validateContactData(req, res, next) {
 }
 
 // POST /api/contact - Submit contact form
-router.post('/', validateContactData, (req, res) => {
+contactRouter.post('/', validateContactData, (req, res) => {
   const { name, email, whatsapp } = req.body;
   const sql = `INSERT INTO contact_submissions (name, email, whatsapp) VALUES ($1, $2, $3)`;
   const params = [name, email, whatsapp];
@@ -57,7 +58,7 @@ router.post('/', validateContactData, (req, res) => {
 });
 
 // GET /api/registered-users - View registered users with better error handling
-router.get('/', isAuthenticated, (req, res) => {
+registeredUsersRouter.get('/', isAuthenticated, (req, res) => {
   db.all("SELECT name, email, whatsapp FROM contact_submissions ORDER BY submission_date DESC", [], (err, rows) => {
     if (err) {
       console.error('Database error fetching contact submissions:', err);
@@ -67,4 +68,4 @@ router.get('/', isAuthenticated, (req, res) => {
   });
 });
 
-module.exports = router;
+module.exports = { contactRouter, registeredUsersRouter };
