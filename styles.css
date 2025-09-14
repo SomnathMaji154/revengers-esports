@@ -732,10 +732,24 @@ body {
   background: #f8f9fa;
   border: 1px solid var(--color-border);
   border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.cropper-container img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Ensure cropper.js styles work properly */
+.cropper-bg {
+  background-image: repeating-conic-gradient(#eee 0% 25%, transparent 0% 50%) !important;
+  background-size: 16px 16px !important;
 }
 
 .modal img {
   max-width: 100%;
+  height: auto;
 }
 
 /* Admin Panel */

@@ -128,7 +128,7 @@
                                     <label for="playerImage" class="form-label">Player Image:</label>
                                     <input type="file" id="playerImage" name="image" class="form-input" accept="image/*">
                                 </div>
-                                <!-- Image crop modal -->
+                <!-- Image crop modal -->
                                 <div id="playerImageModal" class="modal">
                                     <div class="modal-content">
                                         <div class="modal-header">
@@ -286,6 +286,10 @@
 
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
+    <script>
+        // Override script.js side panel for admin page to prevent conflicts
+        window.adminPageLoaded = true;
+    </script>
     <script src="script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -454,28 +458,34 @@
                         // Destroy existing cropper if it exists
                         if (playerCropper) {
                             playerCropper.destroy();
+                            playerCropper = null;
                         }
                         
-                        // Initialize cropper in modal with error handling
-                        try {
-                            playerCropper = new Cropper(playerCropperImg, {
-                                aspectRatio: 3 / 4,
-                                viewMode: 1,
-                                autoCropArea: 0.8,
-                                background: false,
-                                movable: true,
-                                zoomable: true,
-                                rotatable: true,
-                                scalable: true,
-                                ready: function() {
-                                    console.log('Player cropper ready');
-                                }
-                            });
-                        } catch (error) {
-                            console.error('Error initializing player cropper:', error);
-                            alert('Error initializing image cropper. Please try again.');
-                            playerModal.classList.remove('active');
-                        }
+                        // Wait for image to load before initializing cropper
+                        playerCropperImg.onload = function() {
+                            try {
+                                playerCropper = new Cropper(playerCropperImg, {
+                                    aspectRatio: 3 / 4,
+                                    viewMode: 1,
+                                    autoCropArea: 0.8,
+                                    background: false,
+                                    movable: true,
+                                    zoomable: true,
+                                    rotatable: true,
+                                    scalable: true,
+                                    crop: function(event) {
+                                        console.log('Crop data:', event.detail);
+                                    },
+                                    ready: function() {
+                                        console.log('Player cropper initialized and ready');
+                                    }
+                                });
+                            } catch (error) {
+                                console.error('Error initializing player cropper:', error);
+                                alert('Error initializing image cropper. Please try again.');
+                                playerModal.classList.remove('active');
+                            }
+                        };
 
                         // Modal close functionality
                         const closeBtn = playerModal.querySelector('.modal-close');
@@ -574,29 +584,37 @@
                             managerCropperImg.src = e.target.result;
                             managerModal.classList.add('active');
                             
-                            // Initialize cropper in modal
+                            // Destroy existing cropper if it exists
                             if (managerCropper) {
                                 managerCropper.destroy();
+                                managerCropper = null;
                             }
-                            try {
-                                managerCropper = new Cropper(managerCropperImg, {
-                                    aspectRatio: 3 / 4,
-                                    viewMode: 1,
-                                    autoCropArea: 0.8,
-                                    background: false,
-                                    movable: true,
-                                    zoomable: true,
-                                    rotatable: true,
-                                    scalable: true,
-                                    ready: function() {
-                                        console.log('Manager cropper ready');
-                                    }
-                                });
-                            } catch (error) {
-                                console.error('Error initializing manager cropper:', error);
-                                alert('Error initializing image cropper. Please try again.');
-                                managerModal.classList.remove('active');
-                            }
+                            
+                            // Wait for image to load before initializing cropper
+                            managerCropperImg.onload = function() {
+                                try {
+                                    managerCropper = new Cropper(managerCropperImg, {
+                                        aspectRatio: 3 / 4,
+                                        viewMode: 1,
+                                        autoCropArea: 0.8,
+                                        background: false,
+                                        movable: true,
+                                        zoomable: true,
+                                        rotatable: true,
+                                        scalable: true,
+                                        crop: function(event) {
+                                            console.log('Manager crop data:', event.detail);
+                                        },
+                                        ready: function() {
+                                            console.log('Manager cropper initialized and ready');
+                                        }
+                                    });
+                                } catch (error) {
+                                    console.error('Error initializing manager cropper:', error);
+                                    alert('Error initializing image cropper. Please try again.');
+                                    managerModal.classList.remove('active');
+                                }
+                            };
 
                             // Modal close functionality
                             const closeBtn = managerModal.querySelector('.modal-close');
@@ -694,29 +712,37 @@
                             trophyCropperImg.src = e.target.result;
                             trophyModal.classList.add('active');
                             
-                            // Initialize cropper in modal
+                            // Destroy existing cropper if it exists
                             if (trophyCropper) {
                                 trophyCropper.destroy();
+                                trophyCropper = null;
                             }
-                            try {
-                                trophyCropper = new Cropper(trophyCropperImg, {
-                                    aspectRatio: 4 / 3,
-                                    viewMode: 1,
-                                    autoCropArea: 0.8,
-                                    background: false,
-                                    movable: true,
-                                    zoomable: true,
-                                    rotatable: true,
-                                    scalable: true,
-                                    ready: function() {
-                                        console.log('Trophy cropper ready');
-                                    }
-                                });
-                            } catch (error) {
-                                console.error('Error initializing trophy cropper:', error);
-                                alert('Error initializing image cropper. Please try again.');
-                                trophyModal.classList.remove('active');
-                            }
+                            
+                            // Wait for image to load before initializing cropper
+                            trophyCropperImg.onload = function() {
+                                try {
+                                    trophyCropper = new Cropper(trophyCropperImg, {
+                                        aspectRatio: 4 / 3,
+                                        viewMode: 1,
+                                        autoCropArea: 0.8,
+                                        background: false,
+                                        movable: true,
+                                        zoomable: true,
+                                        rotatable: true,
+                                        scalable: true,
+                                        crop: function(event) {
+                                            console.log('Trophy crop data:', event.detail);
+                                        },
+                                        ready: function() {
+                                            console.log('Trophy cropper initialized and ready');
+                                        }
+                                    });
+                                } catch (error) {
+                                    console.error('Error initializing trophy cropper:', error);
+                                    alert('Error initializing image cropper. Please try again.');
+                                    trophyModal.classList.remove('active');
+                                }
+                            };
 
                             // Modal close functionality
                             const closeBtn = trophyModal.querySelector('.modal-close');

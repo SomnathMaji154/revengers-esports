@@ -45,10 +45,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make showAlert available globally
     window.showAlert = showAlert;
 
-    // Side panel functionality
+    // Side panel functionality - skip if on admin page with custom handling
     const menuToggle = document.getElementById('menu-toggle');
     const sidePanel = document.getElementById('side-panel');
 
+    // Check if this is admin page with custom handling
+    const isAdminPage = window.adminPageLoaded || window.location.pathname.includes('admin.html');
+    
     function showPanel() {
         if (sidePanel) sidePanel.classList.add('open');
     }
@@ -57,9 +60,20 @@ document.addEventListener('DOMContentLoaded', function() {
         if (sidePanel) sidePanel.classList.remove('open');
     }
 
-    if (menuToggle) {
+    if (menuToggle && !isAdminPage) {
         menuToggle.addEventListener('mouseenter', showPanel);
         menuToggle.addEventListener('click', showPanel);
+    } else if (menuToggle && isAdminPage) {
+        // For admin page, only use click (not hover) to avoid conflicts
+        menuToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (sidePanel.classList.contains('open')) {
+                hidePanel();
+            } else {
+                showPanel();
+            }
+        });
     }
 
     if (sidePanel) {
