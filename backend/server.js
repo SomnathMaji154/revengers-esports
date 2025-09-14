@@ -216,6 +216,25 @@ app.get('/health', (req, res) => {
   res.status(200).json(healthStatus);
 });
 
+// Root route handler - serve index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, '../index.html'));
+});
+
+// Catch-all route for HTML pages - serve the requested HTML file or 404
+app.get('*.html', (req, res) => {
+  const filePath = path.join(__dirname, '..', req.path);
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      logger.warn('HTML file not found', {
+        requestedFile: req.path,
+        ip: req.ip
+      });
+      res.status(404).sendFile(path.join(__dirname, '../index.html')); // Fallback to index
+    }
+  });
+});
+
 // Enhanced error handling middleware
 app.use((err, req, res, next) => {
   // Log error details
