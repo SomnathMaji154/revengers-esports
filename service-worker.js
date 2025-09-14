@@ -7,6 +7,8 @@ const urlsToCache = [
   '/trophies.html',
   '/contact.html',
   '/admin.html',
+  '/about.html',
+  '/registered-users.html',
   '/styles.css',
   '/script.js',
   '/uploads/default-player.jpg',
