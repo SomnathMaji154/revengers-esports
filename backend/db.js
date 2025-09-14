@@ -2,6 +2,7 @@ const { Pool } = require('pg');
 const bcrypt = require('bcryptjs');
 const config = require('./config');
 const logger = require('./logger');
+const monitoring = require('./monitoring');
 
 // Database configuration
 const dbConfig = {
@@ -235,6 +236,8 @@ async function initializeDatabase() {
 // Helper functions to match existing API (callback-based for compatibility)
 module.exports = {
   all: (sql, params = [], callback) => {
+    const startTime = Date.now();
+    
     if (global.MOCK_MODE) {
       // Mock implementation for SELECT queries
       const table = sql.match(/FROM\s+(\w+)/i);
@@ -248,17 +251,27 @@ module.exports = {
       } else {
         callback(null, []);
       }
+      
+      // Record query for monitoring
+      const duration = Date.now() - startTime;
+      monitoring.recordDatabaseQuery(sql.substring(0, 100), duration);
     } else {
       pool.query(sql, params, (err, res) => {
+        const duration = Date.now() - startTime;
+        
         if (err) {
+          monitoring.recordDatabaseQuery(sql.substring(0, 100), duration, err);
           callback(err, null);
         } else {
+          monitoring.recordDatabaseQuery(sql.substring(0, 100), duration);
           callback(null, res.rows);
         }
       });
     }
   },
   get: (sql, params = [], callback) => {
+    const startTime = Date.now();
+    
     if (global.MOCK_MODE) {
       // Mock implementation for single row SELECT queries
       const table = sql.match(/FROM\s+(\w+)/i);
@@ -281,17 +294,27 @@ module.exports = {
       } else {
         callback(null, null);
       }
+      
+      // Record query for monitoring
+      const duration = Date.now() - startTime;
+      monitoring.recordDatabaseQuery(sql.substring(0, 100), duration);
     } else {
       pool.query(sql, params, (err, res) => {
+        const duration = Date.now() - startTime;
+        
         if (err) {
+          monitoring.recordDatabaseQuery(sql.substring(0, 100), duration, err);
           callback(err, null);
         } else {
+          monitoring.recordDatabaseQuery(sql.substring(0, 100), duration);
           callback(null, res.rows[0] || null);
         }
       });
     }
   },
   run: (sql, params = [], callback) => {
+    const startTime = Date.now();
+    
     if (global.MOCK_MODE) {
       // Mock implementation for INSERT/UPDATE/DELETE queries
       try {
@@ -322,7 +345,13 @@ module.exports = {
         } else {
           callback(null, { lastID: null, changes: 1 });
         }
+        
+        // Record query for monitoring
+        const duration = Date.now() - startTime;
+        monitoring.recordDatabaseQuery(sql.substring(0, 100), duration);
       } catch (err) {
+        const duration = Date.now() - startTime;
+        monitoring.recordDatabaseQuery(sql.substring(0, 100), duration, err);
         callback(err);
       }
     } else {
@@ -337,9 +366,16 @@ module.exports = {
       }
 
       pool.query(sql, params, (err, res) => {
+        const duration = Date.now() - startTime;
+        
         if (err) {
+          monitoring.recordDatabaseQuery(sql.substring(0, 100), duration, err);
           return callback(err);
         }
+        
+        // Record successful query
+        monitoring.recordDatabaseQuery(sql.substring(0, 100), duration);
+        
         // lastID is specific to insert, for update/delete, changes is more relevant
         const lastID = (res.rows && res.rows.length > 0 && res.rows[0].id) ? res.rows[0].id : null;
         const changes = res.rowCount;
@@ -359,5 +395,23 @@ module.exports = {
         }
       });
     }
-  }
+  },
+  
+  // Direct pool access for advanced operations
+  query: async (sql, params = []) => {
+    const startTime = Date.now();
+    
+    try {
+      const result = await pool.query(sql, params);
+      const duration = Date.now() - startTime;
+      monitoring.recordDatabaseQuery(sql.substring(0, 100), duration);
+      return result;
+    } catch (error) {
+      const duration = Date.now() - startTime;
+      monitoring.recordDatabaseQuery(sql.substring(0, 100), duration, error);
+      throw error;
+    }
+  },
+  
+  pool: pool
 };

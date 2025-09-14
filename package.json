@@ -6,8 +6,24 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js --watch backend",
-    "build": "echo \"No build step required\" && exit 0",
-    "health": "curl -f http://localhost:3000/health || exit 1"
+    "build": "npm run lint:fix && npm run format && npm run optimize",
+    "health": "curl -f http://localhost:3000/health || exit 1",
+    "lint": "eslint . --ext .js,.html --cache",
+    "lint:fix": "eslint . --ext .js,.html --fix --cache",
+    "lint:report": "eslint . --ext .js,.html --format html -o reports/eslint-report.html",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "security:audit": "npm audit --audit-level=moderate",
+    "security:fix": "npm audit fix",
+    "test": "jest --coverage",
+    "test:watch": "jest --watch",
+    "test:ci": "jest --ci --coverage --watchAll=false",
+    "optimize": "npm run optimize:css",
+    "optimize:css": "cleancss -o dist/styles.min.css styles.css",
+    "analyze": "npm run lint:report && npm run security:audit",
+    "precommit": "npm run lint:fix && npm run format && npm test",
+    "deploy:prepare": "npm run build && npm run test:ci",
+    "monitor": "node scripts/monitor.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -25,10 +41,30 @@
     "multer": "^1.4.5-lts.1",
     "pg": "^8.16.3",
     "sharp": "^0.33.4",
-    "winston": "^3.10.0"
+    "winston": "^3.10.0",
+    "express-slow-down": "^2.0.1",
+    "validator": "^13.11.0",
+    "sanitize-html": "^2.11.0",
+    "dompurify": "^3.0.8",
+    "jsdom": "^23.2.0",
+    "node-cache": "^5.1.2",
+    "prom-client": "^15.1.0"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "eslint": "^8.57.0",
+    "eslint-plugin-security": "^1.7.1",
+    "eslint-plugin-no-unsanitized": "^4.0.2",
+    "@html-eslint/parser": "^0.20.0",
+    "@html-eslint/eslint-plugin": "^0.20.0",
+    "prettier": "^3.1.1",
+    "jest": "^29.7.0",
+    "supertest": "^6.3.4",
+    "@jest/globals": "^29.7.0",
+    "clean-css-cli": "^5.6.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "cross-env": "^7.0.3"
   },
   "engines": {
     "node": ">=18.0.0"
@@ -43,12 +79,33 @@
     "gaming",
     "website",
     "nodejs",
-    "express"
+    "express",
+    "postgresql",
+    "cloudinary",
+    "security",
+    "performance"
   ],
+  "lint-staged": {
+    "*.{js,html}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{css,json,md}": [
+      "prettier --write"
+    ]
+  },
   "author": "Revengers Esports Team",
   "license": "ISC",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/SomnathMaji154"
+  },
   "bugs": {
     "url": "https://github.com/SomnathMaji154/revengers-esports/issues"
   },
-  "homepage": "https://github.com/SomnathMaji154/revengers-esports#readme"
+  "homepage": "https://github.com/SomnathMaji154/revengers-esports#readme",
+  "volta": {
+    "node": "18.19.0",
+    "npm": "10.2.3"
+  }
 }

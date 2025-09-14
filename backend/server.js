@@ -1,5 +1,10 @@
 const config = require('./config');
 const logger = require('./logger');
+const security = require('./security');
+const errorTracker = require('./errorTracker');
+const performance = require('./performance');
+const monitoring = require('./monitoring');
+const healthCheckRoutes = require('./healthcheck');
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -8,7 +13,10 @@ const helmet = require('helmet');
 const compression = require('compression');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
+const slowDown = require('express-slow-down');
 const crypto = require('crypto');
+const NodeCache = require('node-cache');
+const client = require('prom-client');
 
 // Import modularized components
 const { pool } = require('./db');
@@ -23,56 +31,201 @@ const app = express();
 const PORT = config.PORT;
 const NODE_ENV = config.NODE_ENV;
 
+// Initialize caching
+const cache = new NodeCache({ stdTTL: 300, checkperiod: 60 });
+
+// Initialize Prometheus metrics
+const register = new client.Registry();
+client.collectDefaultMetrics({ register });
+
+// Custom metrics
+const httpRequestsTotal = new client.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status_code'],
+  registers: [register]
+});
+
+const httpRequestDuration = new client.Histogram({
+  name: 'http_request_duration_seconds',
+  help: 'Duration of HTTP requests in seconds',
+  labelNames: ['method', 'route'],
+  registers: [register]
+});
+
+const activeConnections = new client.Gauge({
+  name: 'active_connections',
+  help: 'Number of active connections',
+  registers: [register]
+});
+
 // Log startup information
 logger.info('Starting Revengers Esports server', config.getDebugInfo());
 
 // Trust the first proxy (required for Render)
 app.set('trust proxy', 1);
 
+// Request correlation middleware (must be first)
+app.use(errorTracker.correlationMiddleware());
+
 // Security and performance middleware
-app.use(compression({ level: config.COMPRESSION_LEVEL }));
+app.use(compression({ 
+  level: config.COMPRESSION_LEVEL,
+  threshold: 1024,
+  filter: (req, res) => {
+    // Don't compress already compressed files
+    if (req.headers['content-encoding']) {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}));
+
+// Enhanced Helmet configuration with strict security
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
-      imgSrc: ["'self'", "data:", "https://res.cloudinary.com", "https://cloudinary.com"],
-      connectSrc: ["'self'"],
+      scriptSrc: [
+        "'self'", 
+        "'unsafe-inline'", 
+        "https://cdnjs.cloudflare.com",
+        "https://unpkg.com",
+        "'nonce-$NONCE'"
+      ],
+      styleSrc: [
+        "'self'", 
+        "'unsafe-inline'", 
+        "https://cdnjs.cloudflare.com", 
+        "https://fonts.googleapis.com"
+      ],
+      imgSrc: [
+        "'self'", 
+        "data:", 
+        "https://res.cloudinary.com", 
+        "https://cloudinary.com",
+        "https:"
+      ],
+      connectSrc: ["'self'", "https://api.cloudinary.com"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
       frameSrc: ["'none'"],
+      baseUri: ["'self'"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+      upgradeInsecureRequests: config.isProduction ? [] : null
     },
+    reportOnly: false
   },
-  crossOriginEmbedderPolicy: false, // Needed for some image processing
-  referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
+  crossOriginEmbedderPolicy: false,
+  crossOriginOpenerPolicy: { policy: 'same-origin' },
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  dnsPrefetchControl: { allow: false },
+  frameguard: { action: 'deny' },
+  hidePoweredBy: true,
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  },
+  ieNoOpen: true,
+  noSniff: true,
+  originAgentCluster: true,
+  permittedCrossDomainPolicies: false,
+  referrerPolicy: { policy: 'strict-origin-when-cross-origin' },
+  xssFilter: true
 }));
 
-// Enhanced logging middleware
-app.use(logger.httpLog);
+// Enhanced logging middleware with metrics
+app.use((req, res, next) => {
+  const start = Date.now();
+  
+  // Track active connections
+  activeConnections.inc();
+  
+  res.on('finish', () => {
+    const duration = (Date.now() - start) / 1000;
+    const route = req.route ? req.route.path : req.path;
+    
+    // Record metrics
+    httpRequestsTotal.inc({
+      method: req.method,
+      route,
+      status_code: res.statusCode
+    });
+    
+    httpRequestDuration.observe(
+      { method: req.method, route },
+      duration
+    );
+    
+    activeConnections.dec();
+    
+    // Record in advanced monitoring
+    monitoring.recordRequest(req.method, req.path, res.statusCode, duration * 1000);
+    
+    // Log request details
+    const logData = {
+      method: req.method,
+      url: req.url,
+      status: res.statusCode,
+      duration: `${Math.round(duration * 1000)}ms`,
+      ip: req.ip || req.connection.remoteAddress,
+      userAgent: req.get('User-Agent'),
+      userId: req.session?.userId || 'anonymous',
+      responseSize: res.get('Content-Length') || 0
+    };
+
+    if (res.statusCode >= 400) {
+      console.error('[HTTP Error]', logData);
+    } else {
+      console.log('[HTTP Request]', logData);
+    }
+  });
+
+  next();
+});
+
+// Request sanitization middleware
+app.use(security.sanitizeRequest());
 
 // CORS configuration
 app.use(cors(config.corsConfig));
 
-// Rate limiting
+// Rate limiting with enhanced security
 const generalLimiter = rateLimit({
   ...config.rateLimitConfig,
+  keyGenerator: (req) => security.generateRateLimitKey(req, { includeEndpoint: true }),
   message: {
     error: 'Too many requests from this IP, please try again later.',
-    code: 'RATE_LIMIT_EXCEEDED'
+    code: 'RATE_LIMIT_EXCEEDED',
+    retryAfter: Math.ceil(config.rateLimitConfig.windowMs / 1000)
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler: (req, res, next, options) => {
+    logger.securityLog('Rate limit exceeded', {
+      ip: req.ip,
+      userAgent: req.get('User-Agent'),
+      path: req.path,
+      key: security.generateRateLimitKey(req)
+    });
+    res.status(options.statusCode).json(options.message);
   }
 });
 
 const authLimiter = rateLimit({
   ...config.authRateLimitConfig,
+  keyGenerator: (req) => security.generateRateLimitKey(req, { includeUserAgent: true }),
   message: {
     error: 'Too many authentication attempts, please try again later.',
-    code: 'AUTH_RATE_LIMIT_EXCEEDED'
+    code: 'AUTH_RATE_LIMIT_EXCEEDED',
+    retryAfter: Math.ceil(config.authRateLimitConfig.windowMs / 1000)
   },
   skipSuccessfulRequests: true,
   handler: (req, res, next, options) => {
-    logger.securityLog('Rate limit exceeded for auth endpoint', {
+    logger.securityLog('Auth rate limit exceeded', {
       ip: req.ip,
       userAgent: req.get('User-Agent'),
       path: req.path
@@ -81,7 +234,17 @@ const authLimiter = rateLimit({
   }
 });
 
+// Slow down middleware for additional protection
+const speedLimiter = slowDown({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  delayAfter: 50, // Allow 50 requests per window at full speed
+  delayMs: 100, // Add 100ms delay per request after delayAfter
+  maxDelayMs: 20000, // Maximum delay of 20 seconds
+  keyGenerator: (req) => security.generateRateLimitKey(req)
+});
+
 app.use('/api/', generalLimiter);
+app.use('/api/', speedLimiter);
 app.use('/api/admin/login', authLimiter);
 
 // Body parsing middleware
@@ -193,6 +356,9 @@ app.use('/api/trophies', trophyRoutes);
 app.use('/api/contact', contactRouter);
 app.use('/api/registered-users', registeredUsersRouter);
 
+// Advanced health check and monitoring routes
+app.use('/api/health', healthCheckRoutes);
+
 // CSRF token endpoint for frontend
 app.get('/api/csrf-token', (req, res) => {
   const token = crypto.randomBytes(32).toString('hex');
@@ -205,21 +371,112 @@ app.get('/api/csrf-token', (req, res) => {
   res.json({ csrfToken: token });
 });
 
-// Health check endpoint with detailed status
-app.get('/health', (req, res) => {
+// Metrics endpoint for monitoring
+app.get('/metrics', (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(register.metrics());
+});
+
+// Enhanced health check endpoint with comprehensive diagnostics
+app.get('/health', async (req, res) => {
+  const startTime = Date.now();
+  
   const healthStatus = {
     status: 'ok',
     timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
+    uptime: Math.floor(process.uptime()),
     environment: config.NODE_ENV,
-    database: global.MOCK_MODE ? 'mock' : 'connected',
+    version: require('../package.json').version,
+    nodejs: process.version,
     memory: {
       used: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
-      total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024)
-    }
+      total: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+      rss: Math.round(process.memoryUsage().rss / 1024 / 1024),
+      external: Math.round(process.memoryUsage().external / 1024 / 1024)
+    },
+    cpu: {
+      usage: process.cpuUsage()
+    },
+    database: {
+      status: global.MOCK_MODE ? 'mock' : 'connected',
+      mockMode: global.MOCK_MODE || false
+    },
+    cache: {
+      keys: cache.keys().length,
+      hits: cache.getStats().hits || 0,
+      misses: cache.getStats().misses || 0
+    },
+    security: {
+      csrfProtection: true,
+      rateLimiting: true,
+      helmet: true,
+      inputSanitization: true
+    },
+    errors: errorTracker.getErrorStats(),
+    performance: performance.getPerformanceReport()
   };
+
+  // Test database connectivity
+  if (!global.MOCK_MODE) {
+    try {
+      const dbStart = Date.now();
+      await pool.query('SELECT 1 as health_check');
+      healthStatus.database.responseTime = Date.now() - dbStart;
+      healthStatus.database.status = 'healthy';
+    } catch (error) {
+      healthStatus.database.status = 'error';
+      healthStatus.database.error = error.message;
+      healthStatus.status = 'degraded';
+      
+      // Track database error
+      errorTracker.trackError(
+        errorTracker.createError(
+          'Health check database error',
+          errorTracker.errorCategories.DATABASE,
+          { healthCheck: true }
+        ),
+        req
+      );
+    }
+  }
+
+  // Check memory usage thresholds
+  if (healthStatus.memory.used > 500) { // 500MB threshold
+    healthStatus.status = 'warning';
+    healthStatus.warnings = healthStatus.warnings || [];
+    healthStatus.warnings.push('High memory usage detected');
+  }
+
+  // Check error rates
+  if (healthStatus.errors.criticalErrors > 0) {
+    healthStatus.status = 'warning';
+    healthStatus.warnings = healthStatus.warnings || [];
+    healthStatus.warnings.push('Critical errors detected');
+  }
+
+  const responseTime = Date.now() - startTime;
+  healthStatus.responseTime = responseTime;
+
+  // Set appropriate status code
+  const statusCode = healthStatus.status === 'ok' ? 200 : 
+                    healthStatus.status === 'warning' ? 200 : 503;
   
-  res.status(200).json(healthStatus);
+  res.status(statusCode).json(healthStatus);
+});
+
+// Error statistics endpoint
+app.get('/api/admin/errors', isAuthenticated, (req, res) => {
+  const stats = errorTracker.getErrorStats();
+  res.json({
+    ...stats,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// Performance report endpoint
+app.get('/api/admin/performance', isAuthenticated, (req, res) => {
+  const report = performance.getPerformanceReport();
+  res.json(report);
 });
 
 // Root route handler - serve index.html with no-cache headers
@@ -248,49 +505,79 @@ app.get('*.html', (req, res) => {
   });
 });
 
-// Enhanced error handling middleware
+// Enhanced error handling middleware with comprehensive tracking
 app.use((err, req, res, next) => {
-  // Log error details
-  logger.error('Unhandled application error', {
-    error: err.message,
-    stack: err.stack,
-    url: req.url,
+  // Use error tracker for comprehensive logging and handling
+  errorTracker.trackError(err, req, {
+    endpoint: req.path,
     method: req.method,
-    ip: req.ip,
-    userAgent: req.get('User-Agent')
+    body: req.body,
+    query: req.query,
+    params: req.params
   });
 
   // CSRF errors
   if (err.code === 'EBADCSRFTOKEN') {
-    return res.status(403).json({
-      error: 'Invalid CSRF token',
-      code: 'CSRF_INVALID'
-    });
+    const csrfError = errorTracker.createError(
+      'Invalid CSRF token', 
+      errorTracker.errorCategories.SECURITY,
+      { originalError: err.message }
+    );
+    return errorTracker.errorMiddleware()(csrfError, req, res, next);
   }
 
   // Validation errors
   if (err.name === 'ValidationError') {
-    return res.status(400).json({
-      error: 'Validation Error',
-      details: err.details || err.message
-    });
+    const validationError = errorTracker.createError(
+      err.message,
+      errorTracker.errorCategories.VALIDATION,
+      { details: err.details }
+    );
+    return errorTracker.errorMiddleware()(validationError, req, res, next);
   }
 
   // Database errors
   if (err.code && err.code.startsWith('23')) { // PostgreSQL constraint errors
-    return res.status(409).json({
-      error: 'Database constraint violation',
-      code: 'CONSTRAINT_VIOLATION'
-    });
+    const dbError = errorTracker.createError(
+      'Database constraint violation',
+      errorTracker.errorCategories.DATABASE,
+      { pgCode: err.code, detail: err.detail }
+    );
+    return errorTracker.errorMiddleware()(dbError, req, res, next);
   }
 
-  // Default error response
-  const statusCode = err.statusCode || err.status || 500;
-  res.status(statusCode).json({
-    error: statusCode === 500 ? 'Internal server error' : err.message,
-    code: err.code || 'INTERNAL_ERROR',
-    ...(config.isDevelopment && { stack: err.stack })
-  });
+  // Rate limiting errors
+  if (err.type === 'request.rate.limit') {
+    const rateLimitError = errorTracker.createError(
+      'Rate limit exceeded',
+      errorTracker.errorCategories.SECURITY,
+      { limit: err.limit, current: err.current }
+    );
+    return errorTracker.errorMiddleware()(rateLimitError, req, res, next);
+  }
+
+  // File upload errors
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    const fileError = errorTracker.createError(
+      'File too large',
+      errorTracker.errorCategories.VALIDATION,
+      { limit: err.limit, field: err.field }
+    );
+    return errorTracker.errorMiddleware()(fileError, req, res, next);
+  }
+
+  // Network/timeout errors
+  if (err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND' || err.code === 'ETIMEDOUT') {
+    const networkError = errorTracker.createError(
+      'Network connectivity error',
+      errorTracker.errorCategories.NETWORK,
+      { code: err.code, address: err.address, port: err.port }
+    );
+    return errorTracker.errorMiddleware()(networkError, req, res, next);
+  }
+
+  // Use error tracker middleware for all other errors
+  errorTracker.errorMiddleware()(err, req, res, next);
 });
 
 // 404 handler for API routes
