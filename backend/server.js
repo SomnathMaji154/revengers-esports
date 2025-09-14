@@ -1,5 +1,6 @@
 const config = require('./config');
 const logger = require('./logger');
+const config = require('./config');
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
@@ -159,19 +160,25 @@ function csrfProtection(req, res, next) {
   next();
 }
 
-// Static file serving with enhanced caching
+// Static file serving with no-cache for critical files
 const staticOptions = {
-  maxAge: config.CACHE_MAX_AGE * 1000, // Convert to milliseconds
+  maxAge: 0, // No caching by default
   etag: true,
   lastModified: true,
   setHeaders: (res, path) => {
-    // Set longer cache for images
-    if (path.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) {
+    // Force no-cache for HTML, CSS, JS files to ensure fresh content
+    if (path.match(/\.(html|css|js)$/)) {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+    // Set longer cache for images only
+    else if (path.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) {
       res.setHeader('Cache-Control', 'public, max-age=86400'); // 24 hours
     }
-    // Set shorter cache for HTML files
-    if (path.match(/\.html$/)) {
-      res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes
+    // No cache for everything else
+    else {
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     }
   }
 };
@@ -216,13 +223,20 @@ app.get('/health', (req, res) => {
   res.status(200).json(healthStatus);
 });
 
-// Root route handler - serve index.html
+// Root route handler - serve index.html with no-cache headers
 app.get('/', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
   res.sendFile(path.join(__dirname, '../index.html'));
 });
 
-// Catch-all route for HTML pages - serve the requested HTML file or 404
+// Catch-all route for HTML pages - serve with no-cache headers
 app.get('*.html', (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  
   const filePath = path.join(__dirname, '..', req.path);
   res.sendFile(filePath, (err) => {
     if (err) {

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'revengers-esports-v2-admin-fix';
+const CACHE_NAME = 'revengers-esports-v3-always-fresh';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -28,19 +28,32 @@ self.addEventListener('install', event => {
   );
 });
 
-// Fetch event - serve cached content when offline
+// Fetch event - always fetch fresh content, use cache as fallback only
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request).catch(error => {
-          console.log('Network request failed, serving cached content', error);
-          // For HTML requests, return the cached index.html
-          if (event.request.destination === 'document') {
-            return caches.match('/index.html');
-          }
-        });
+        // If fetch is successful, clone and cache the response
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME)
+          .then(cache => {
+            cache.put(event.request, responseClone);
+          });
+        return response;
+      })
+      .catch(error => {
+        console.log('Network request failed, serving cached content', error);
+        // Only serve cached content when network fails
+        return caches.match(event.request)
+          .then(response => {
+            if (response) {
+              return response;
+            }
+            // For HTML requests, return the cached index.html as last resort
+            if (event.request.destination === 'document') {
+              return caches.match('/index.html');
+            }
+          });
       })
   );
 });
