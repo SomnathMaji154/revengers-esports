@@ -83,12 +83,56 @@ router.get('/', (req, res) => {
   });
 });
 
+// Input validation middleware for player data
+function validatePlayerData(req, res, next) {
+  const { name, jerseyNumber, stars } = req.body;
+  
+  // Validate required fields
+  if (!name || !jerseyNumber || !stars) {
+    return res.status(400).json({ error: 'Name, jersey number, and stars are required' });
+  }
+  
+  // Validate jersey number (1-9)
+  const jerseyNum = parseInt(jerseyNumber);
+  if (isNaN(jerseyNum) || jerseyNum < 1 || jerseyNum > 99) {
+    return res.status(400).json({ error: 'Jersey number must be between 1 and 99' });
+  }
+  
+  // Validate stars (1-5)
+  const starRating = parseInt(stars);
+  if (isNaN(starRating) || starRating < 1 || starRating > 5) {
+    return res.status(400).json({ error: 'Stars rating must be between 1 and 5' });
+  }
+  
+  // Sanitize name (remove any HTML tags)
+  const sanitized_name = name.replace(/<[^>]*>/g, '').trim();
+  if (sanitized_name.length === 0) {
+    return res.status(400).json({ error: 'Name cannot be empty' });
+  }
+  
+  req.body.name = sanitized_name;
+  req.body.jerseyNumber = jerseyNum;
+  req.body.stars = starRating;
+  
+  next();
+}
+
 // POST /api/players - Add new player (handles both join page and admin)
-router.post('/', isAuthenticated, upload.single('image'), async (req, res) => { // Protected route
+router.post('/', isAuthenticated, validatePlayerData, upload.single('image'), async (req, res) => { // Protected route
   const { name, jerseyNumber, stars } = req.body;
   let imageUrl = null;
 
   if (req.file) {
+    // Validate file type
+    if (!req.file.mimetype.startsWith('image/')) {
+      return res.status(400).json({ error: 'Only image files are allowed' });
+    }
+    
+    // Validate file size (5MB limit)
+    if (req.file.size > 5 * 1024 * 1024) {
+      return res.status(400).json({ error: 'File size must be less than 5MB' });
+    }
+    
     try {
       const processedImageBuffer = await sharp(req.file.buffer)
         .resize(300, 400, { // Standard size for player cards

@@ -4,12 +4,23 @@ const db = require('./db'); // Import the database connection
 
 const router = express.Router();
 
-// Authentication middleware
+// Authentication middleware with enhanced security
 function isAuthenticated(req, res, next) {
-  if (req.session.isAdmin) {
+  // Check if session exists and user is authenticated
+  if (req.session && req.session.isAdmin) {
+    // Add security headers to prevent caching of sensitive content
+    res.set({
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
     next();
   } else {
-    res.status(401).json({ message: 'Unauthorized' });
+    // Clear any existing session data
+    if (req.session) {
+      req.session.destroy(() => {});
+    }
+    res.status(401).json({ message: 'Unauthorized: Invalid or expired session' });
   }
 }
 

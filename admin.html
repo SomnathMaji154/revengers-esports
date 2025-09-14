@@ -18,10 +18,25 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.css">
     <link rel="icon" href="/uploads/logo.webp" type="image/webp">
+    <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>Admin - Revengers Esports</title>
 </head>
 <body>
+    <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
     <header class="site-header">
         <div class="header-container">
             <div class="logo">
@@ -43,13 +58,13 @@
 
     <main class="main-content">
         <section id="login-section" class="content-section">
-            <div class="container glass-container">
+            <div class="container">
                 <div class="section-header">
                     <h1 class="section-title">Admin Login</h1>
                     <p class="section-description">Please login to access the admin panel.</p>
                 </div>
                 
-                <div class="form-container glass-card">
+                <div class="form-container">
                     <form id="login-form" method="POST" action="/api/admin/login">
                         <div class="form-group">
                             <label for="username" class="form-label">Username:</label>

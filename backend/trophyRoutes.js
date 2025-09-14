@@ -83,12 +83,49 @@ router.get('/', (req, res) => {
   });
 });
 
+// Input validation middleware for trophy data
+function validateTrophyData(req, res, next) {
+  const { name, year } = req.body;
+  
+  // Validate required fields
+  if (!name || !year) {
+    return res.status(400).json({ error: 'Name and year are required' });
+  }
+  
+  // Validate year (1900-2100)
+  const trophyYear = parseInt(year);
+  if (isNaN(trophyYear) || trophyYear < 1900 || trophyYear > 2100) {
+    return res.status(400).json({ error: 'Year must be between 1900 and 2100' });
+  }
+  
+  // Sanitize name (remove any HTML tags)
+  const sanitized_name = name.replace(/<[^>]*>/g, '').trim();
+  if (sanitized_name.length === 0) {
+    return res.status(400).json({ error: 'Name cannot be empty' });
+  }
+  
+  req.body.name = sanitized_name;
+  req.body.year = trophyYear;
+  
+  next();
+}
+
 // POST /api/trophies - Add new trophy (protected route)
-router.post('/', isAuthenticated, upload.single('image'), async (req, res) => {
+router.post('/', isAuthenticated, validateTrophyData, upload.single('image'), async (req, res) => {
   const { name, year } = req.body;
   let imageUrl = null;
 
   if (req.file) {
+    // Validate file type
+    if (!req.file.mimetype.startsWith('image/')) {
+      return res.status(400).json({ error: 'Only image files are allowed' });
+    }
+    
+    // Validate file size (5MB limit)
+    if (req.file.size > 5 * 1024 * 1024) {
+      return res.status(400).json({ error: 'File size must be less than 5MB' });
+    }
+    
     try {
       const processedImageBuffer = await sharp(req.file.buffer)
         .resize(400, 300, { // Standard size for trophies (landscape)

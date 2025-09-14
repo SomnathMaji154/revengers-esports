@@ -15,12 +15,42 @@
     <meta name="twitter:title" content="Revengers Esports">
     <meta name="twitter:description" content="Dominating the football esports community with skill, strategy, and passion.">
     <meta name="twitter:image" content="/uploads/logo.webp">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Revengers Esports",
+      "url": "https://revengers-esports.onrender.com",
+      "logo": "https://revengers-esports.onrender.com/uploads/logo.webp",
+      "description": "Dominating the football esports community with skill, strategy, and passion.",
+      "sameAs": [
+        "https://twitter.com/revengeresports",
+        "https://instagram.com/revengeresports",
+        "https://youtube.com/revengeresports"
+      ]
+    }
+    </script>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="/uploads/logo.webp" type="image/webp">
+    <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>Revengers Esports</title>
 </head>
 <body>
+    <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
     <header class="site-header">
         <div class="header-container">
             <div class="logo">
@@ -44,19 +74,19 @@
             <div class="hero-container">
                 <h1 class="hero-title fade-in">Welcome to Revengers Esports</h1>
                 <p class="hero-subtitle fade-in">Dominating the football esports community with skill, strategy, and passion. Explore our team, achievements, and join the pride.</p>
-                <img src="https://media.giphy.com/media/l0HlRnAWXxn0MhKLK/giphy.gif" alt="Animated Lion" class="hero-image slide-in-right">
+                <img src="https://media.giphy.com/media/l0HlRnAWXxn0MhKLK/giphy.gif" alt="Animated Lion" class="hero-image slide-in-right" loading="lazy">
             </div>
         </section>
 
         <section class="content-section">
-            <div class="container glass-container">
+            <div class="container">
                 <div class="section-header">
                     <h2 class="section-title">About Our Team</h2>
                     <p class="section-description">We are a professional football esports organization dedicated to excellence and victory in competitive gaming.</p>
                 </div>
                 
                 <div class="card-grid">
-                    <div class="player-card glass-card">
+                    <div class="modern-card">
                         <div class="card-content">
                             <h3 class="card-title">Professional Players</h3>
                             <p class="card-description">Our roster features top-tier talent with exceptional skills and strategic thinking.</p>
@@ -66,7 +96,7 @@
                         </div>
                     </div>
                     
-                    <div class="player-card glass-card">
+                    <div class="modern-card">
                         <div class="card-content">
                             <h3 class="card-title">Expert Management</h3>
                             <p class="card-description">Our management team ensures peak performance through strategic planning and support.</p>
@@ -76,7 +106,7 @@
                         </div>
                     </div>
                     
-                    <div class="player-card glass-card">
+                    <div class="modern-card">
                         <div class="card-content">
                             <h3 class="card-title">Championship Trophies</h3>
                             <p class="card-description">Our achievements speak volumes about our dedication and competitive spirit.</p>

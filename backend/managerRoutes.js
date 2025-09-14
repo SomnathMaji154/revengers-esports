@@ -83,12 +83,45 @@ router.get('/', (req, res) => {
   });
 });
 
+// Input validation middleware for manager data
+function validateManagerData(req, res, next) {
+  const { name, role } = req.body;
+  
+  // Validate required fields
+  if (!name || !role) {
+    return res.status(400).json({ error: 'Name and role are required' });
+  }
+  
+  // Sanitize inputs (remove any HTML tags)
+  const sanitized_name = name.replace(/<[^>]*>/g, '').trim();
+  const sanitized_role = role.replace(/<[^>]*>/g, '').trim();
+  
+  if (sanitized_name.length === 0 || sanitized_role.length === 0) {
+    return res.status(400).json({ error: 'Name and role cannot be empty' });
+  }
+  
+  req.body.name = sanitized_name;
+  req.body.role = sanitized_role;
+  
+  next();
+}
+
 // POST /api/managers - Add new manager (protected route)
-router.post('/', isAuthenticated, upload.single('image'), async (req, res) => {
+router.post('/', isAuthenticated, validateManagerData, upload.single('image'), async (req, res) => {
   const { name, role } = req.body;
   let imageUrl = null;
 
   if (req.file) {
+    // Validate file type
+    if (!req.file.mimetype.startsWith('image/')) {
+      return res.status(400).json({ error: 'Only image files are allowed' });
+    }
+    
+    // Validate file size (5MB limit)
+    if (req.file.size > 5 * 1024 * 1024) {
+      return res.status(400).json({ error: 'File size must be less than 5MB' });
+    }
+    
     try {
       const processedImageBuffer = await sharp(req.file.buffer)
         .resize(300, 400, { // Standard size for manager cards

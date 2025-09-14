@@ -64,14 +64,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
                 }
 
+                const result = await response.json();
                 showAlert('Thank you for contacting us, ' + name + '! Your message has been submitted.', 'success');
                 contactForm.reset();
             } catch (error) {
                 console.error('Error submitting contact form:', error);
-                showAlert('Error submitting contact form. Please try again.', 'error');
+                showAlert('Error submitting contact form: ' + error.message, 'error');
             } finally {
                 // Re-enable submit button
                 submitButton.textContent = originalText;
@@ -88,7 +90,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function checkAdminStatus() {
         try {
-            const response = await fetch('/api/admin/status');
+            const response = await fetch('/api/admin/status', {
+                credentials: 'include'
+            });
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
@@ -108,15 +112,18 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         try {
-            const response = await fetch('/api/registered-users');
+            const response = await fetch('/api/registered-users', {
+                credentials: 'include'
+            });
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                const errorData = await response.json().catch(() => ({}));
+                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
             }
             const users = await response.json();
             displayRegisteredUsers(users);
         } catch (error) {
             console.error('Error fetching registered users:', error);
-            showAlert('Error loading registered users.', 'error');
+            showAlert('Error loading registered users: ' + error.message, 'error');
             userDataBody.innerHTML = '<tr><td colspan="3">Error loading registered users.</td></tr>';
         }
     }
@@ -146,6 +153,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Create alert element
         const alert = document.createElement('div');
         alert.className = `alert alert-${type} custom-alert`;
+        alert.setAttribute('role', 'alert');
         alert.textContent = message;
 
         // Add close button
@@ -155,6 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
         closeBtn.style.cursor = 'pointer';
         closeBtn.style.fontSize = '1.5em';
         closeBtn.style.lineHeight = '0.5';
+        closeBtn.setAttribute('aria-label', 'Close alert');
         closeBtn.onclick = () => alert.remove();
         alert.appendChild(closeBtn);
 

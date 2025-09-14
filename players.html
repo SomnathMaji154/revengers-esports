@@ -15,12 +15,37 @@
     <meta name="twitter:title" content="Players - Revengers Esports">
     <meta name="twitter:description" content="Meet our talented football esports players dominating virtual pitches.">
     <meta name="twitter:image" content="/uploads/logo.webp">
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SportsTeam",
+      "name": "Revengers Esports Players",
+      "url": "https://revengers-esports.onrender.com/players.html",
+      "description": "Meet our talented football esports players dominating virtual pitches.",
+      "sport": "Football Esports"
+    }
+    </script>
     <link rel="stylesheet" href="styles.css">
     <link rel="icon" href="/uploads/logo.webp" type="image/webp">
+    <link rel="manifest" href="/manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>Players - Revengers Esports</title>
 </head>
 <body>
+    <script>
+        // Register service worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/service-worker.js')
+                    .then(registration => {
+                        console.log('SW registered: ', registration);
+                    })
+                    .catch(registrationError => {
+                        console.log('SW registration failed: ', registrationError);
+                    });
+            });
+        }
+    </script>
     <header class="site-header">
         <div class="header-container">
             <div class="logo">
@@ -42,7 +67,7 @@
 
     <main class="main-content">
         <section class="content-section">
-            <div class="container glass-container">
+            <div class="container">
                 <div class="section-header">
                     <h1 class="section-title">Our Players</h1>
                     <p class="section-description">Meet our talented football esports players dominating virtual pitches.</p>
@@ -50,7 +75,7 @@
                 
                 <div class="card-grid" id="players-grid">
                     <!-- Players will be loaded dynamically -->
-                    <div class="player-card glass-card">
+                    <div class="player-card">
                         <div class="card-content text-center">
                             <div class="loading-spinner"></div>
                             <p class="mt-md">Loading players...</p>
