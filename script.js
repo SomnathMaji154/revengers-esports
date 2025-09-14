@@ -218,18 +218,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const data = await response.json();
             
-            // Only update admin link visibility if we have specific admin links (not side panel)
+            // Only update admin link visibility for specific admin links (NOT side panel)
             const adminLink = document.getElementById('admin-link');
             if (adminLink) {
                 adminLink.style.display = data.loggedIn ? 'block' : 'none';
             }
             
-            // ALWAYS keep side panel admin link visible for easy access
-            // Don't hide it based on login status
-            const adminLinkSide = document.getElementById('admin-link-side');
-            if (adminLinkSide) {
-                adminLinkSide.style.display = 'block'; // Always visible
-            }
+            // NEVER hide side panel admin link - it should ALWAYS be visible
+            // Side panel admin link is for easy access, not dependent on login status
             
             return data.loggedIn;
         } catch (error) {
@@ -238,17 +234,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 showAlert('Request timeout. Please try again.', 'error');
             }
             
-            // Only hide specific admin links, not side panel
+            // Only hide specific admin links (NOT side panel)
             const adminLink = document.getElementById('admin-link');
             if (adminLink) {
                 adminLink.style.display = 'none';
             }
             
-            // Keep side panel admin link visible even on error
-            const adminLinkSide = document.getElementById('admin-link-side');
-            if (adminLinkSide) {
-                adminLinkSide.style.display = 'block'; // Always visible
-            }
+            // NEVER touch side panel admin link - it should always remain visible
             
             return false;
         }
@@ -515,6 +507,27 @@ document.addEventListener('DOMContentLoaded', function() {
     // Note: checkAdminStatus() is called on demand, not automatically
     // This prevents hiding the admin link unnecessarily
     
+    // CRITICAL: Ensure admin link is ALWAYS visible in side panel
+    // This runs after all other initialization to guarantee visibility
+    const ensureAdminLinkVisible = () => {
+        const adminLinkSide = document.getElementById('admin-link-side');
+        if (adminLinkSide) {
+            adminLinkSide.style.display = 'block';
+            adminLinkSide.style.visibility = 'visible';
+            adminLinkSide.style.opacity = '1';
+            console.log('Admin link forced to be visible:', adminLinkSide);
+        } else {
+            console.error('Admin link side not found in DOM!');
+        }
+    };
+    
+    // Call immediately
+    ensureAdminLinkVisible();
+    
+    // Also call after a short delay to override any other scripts
+    setTimeout(ensureAdminLinkVisible, 100);
+    setTimeout(ensureAdminLinkVisible, 500);
+    
     // Export functions to global scope for use in inline scripts
     window.fetchPlayers = fetchPlayers;
     window.fetchManagers = fetchManagers;
@@ -523,4 +536,5 @@ document.addEventListener('DOMContentLoaded', function() {
     window.displayManagers = displayManagers;
     window.displayTrophies = displayTrophies;
     window.checkAdminStatus = checkAdminStatus;
+    window.ensureAdminLinkVisible = ensureAdminLinkVisible;
 });

@@ -166,6 +166,13 @@ body {
     transition: var(--transition);
 }
 
+/* CRITICAL: Ensure admin link is always visible */
+#admin-link-side {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
 .side-nav-link:hover {
     color: var(--color-accent);
     padding-left: var(--spacing-sm);
